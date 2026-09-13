@@ -1,6 +1,6 @@
-# Novera Labs
+# Nexora Tech
 
-Animated marketing website for Novera Labs, a service-based technology company offering custom CRM systems and website development.
+Brand-led marketing website for Nexora Tech, a technology company creating digital products, custom CRM systems, automation, and connected business platforms.
 
 ## Tech stack
 
@@ -9,6 +9,10 @@ Animated marketing website for Novera Labs, a service-based technology company o
 - Vinext / Vite
 - Framer Motion
 - Lucide React
+
+## Brand system
+
+The website follows the supplied Nexora Tech brand guidelines: Sora and Inter typography, the official navy/blue/cyan/indigo/violet palette, structured geometry, restrained luminous accents, and clear, confident, progressive, human language.
 
 ## Run locally
 
