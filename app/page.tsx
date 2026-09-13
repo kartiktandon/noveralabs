@@ -51,16 +51,16 @@ function Reveal({
 
 function BrandLogo() {
   return (
-    <span className="brand-lockup" aria-label="Nexora Tech">
+    <span className="brand-lockup" aria-label="Novera">
       <Image
         className="brand-symbol"
-        src="/nexora-tech-mark-transparent.png"
+        src="/novera-mark.png"
         alt=""
         width={1120}
         height={1405}
         priority
       />
-      <span className="brand-wordmark">NEXORA TECH</span>
+      <span className="brand-wordmark">NOVERA</span>
     </span>
   );
 }
@@ -179,7 +179,7 @@ export default function Home() {
   return (
     <main>
       <header className="site-header">
-        <a className="logo-link" href="#top" aria-label="Nexora Tech home">
+        <a className="logo-link" href="#top" aria-label="Novera home">
           <BrandLogo />
         </a>
         <nav className="desktop-nav" aria-label="Primary navigation">
@@ -253,7 +253,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.14, ease }}
           >
-            Nexora Tech turns complex technology into clear business momentum -
+            Novera turns complex technology into clear business momentum -
             through digital products, custom platforms, and connected systems.
           </motion.p>
           <motion.div
@@ -276,7 +276,7 @@ export default function Home() {
           initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.12, ease }}
-          aria-label="Nexora Tech brand mark representing connected business momentum"
+          aria-label="Novera brand mark representing connected business momentum"
         >
           <div className="stage-glow" />
           <div className="orbit orbit-one">
@@ -298,7 +298,7 @@ export default function Home() {
             <Image
               className="glass-n-logo"
               src="/novera-3d-mark.png"
-              alt="Glass Nexora N surrounded by connected technology symbols"
+              alt="Glass Novera N surrounded by connected technology symbols"
               width={1536}
               height={1024}
               priority
@@ -322,7 +322,7 @@ export default function Home() {
         </motion.div>
       </section>
 
-      <section className="promise-strip" aria-label="Nexora Tech promise">
+      <section className="promise-strip" aria-label="Novera promise">
         <p>Clear systems.</p>
         <i />
         <p>Smarter decisions.</p>
@@ -387,12 +387,7 @@ export default function Home() {
         />
         <Reveal className="system-demo">
           <aside className="demo-rail">
-            <Image
-              src="/nexora-tech-mark-transparent.png"
-              alt=""
-              width={1120}
-              height={1405}
-            />
+            <Image src="/novera-mark.png" alt="" width={1120} height={1405} />
             {[Gauge, Database, Workflow, Bot].map((Icon, index) => (
               <span className={index === 0 ? 'active' : ''} key={index}>
                 <Icon />
@@ -464,7 +459,7 @@ export default function Home() {
 
       <section className="principles" id="about">
         <SectionIntro
-          eyebrow="How Nexora feels"
+          eyebrow="How Novera feels"
           title={
             <>
               Intelligent by nature.
@@ -594,12 +589,12 @@ export default function Home() {
       <footer className="site-footer">
         <div>
           <Image
-            src="/nexora-tech-mark-transparent.png"
-            alt="Nexora Tech"
+            src="/novera-mark.png"
+            alt="Novera"
             width={1120}
             height={1405}
           />
-          <span>NEXORA TECH</span>
+          <span>NOVERA</span>
         </div>
         <p>Technology that moves business forward.</p>
         <a href="#top">

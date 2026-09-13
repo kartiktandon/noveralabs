@@ -1,6 +1,6 @@
-# Nexora Tech
+# Novera
 
-Brand-led marketing website for Nexora Tech, a technology company creating digital products, custom CRM systems, automation, and connected business platforms.
+Brand-led marketing website for Novera, a technology company creating digital products, custom CRM systems, automation, and connected business platforms.
 
 ## Tech stack
 
@@ -12,7 +12,7 @@ Brand-led marketing website for Nexora Tech, a technology company creating digit
 
 ## Brand system
 
-The website follows the supplied Nexora Tech brand guidelines: Sora and Inter typography, the official navy/blue/cyan/indigo/violet palette, structured geometry, restrained luminous accents, and clear, confident, progressive, human language.
+The website follows the supplied brand guidelines: Sora and Inter typography, the official navy/blue/cyan/indigo/violet palette, structured geometry, restrained luminous accents, and clear, confident, progressive, human language.
 
 ## Run locally
 

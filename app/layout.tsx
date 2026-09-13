@@ -13,31 +13,31 @@ const siteUrl =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: 'Nexora Tech — Technology that moves business forward',
+  title: 'Novera — Technology that moves business forward',
   description:
-    'Nexora Tech turns complex technology into clear business momentum through digital products, custom platforms, and connected systems.',
+    'Novera turns complex technology into clear business momentum through digital products, custom platforms, and connected systems.',
   icons: {
-    icon: [{ url: '/nexora-tech-mark-transparent.png', type: 'image/png' }],
-    shortcut: '/nexora-tech-mark-transparent.png',
-    apple: '/nexora-tech-mark-transparent.png',
+    icon: [{ url: '/novera-mark.png', type: 'image/png' }],
+    shortcut: '/novera-mark.png',
+    apple: '/novera-mark.png',
   },
   openGraph: {
-    title: 'Nexora Tech — Technology that moves business forward',
+    title: 'Novera — Technology that moves business forward',
     description: 'Next-generation technology, made practical.',
     images: [
       {
-        url: '/nexora-tech-og.png',
+        url: '/novera-og.png',
         width: 1200,
         height: 630,
-        alt: 'Nexora Tech — Technology that moves business forward.',
+        alt: 'Novera — Technology that moves business forward.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Nexora Tech — Technology that moves business forward',
+    title: 'Novera — Technology that moves business forward',
     description: 'Next-generation technology, made practical.',
-    images: ['/nexora-tech-og.png'],
+    images: ['/novera-og.png'],
   },
 };
 
