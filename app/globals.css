@@ -342,11 +342,18 @@ main {
   place-items: center;
 }
 
-.glass-n-logo {
+.glass-n-motion {
   width: min(94%, 740px);
-  height: auto;
   position: relative;
   z-index: 3;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.glass-n-logo {
+  display: block;
+  width: 100%;
+  height: auto;
   filter: drop-shadow(0 30px 65px rgba(51, 70, 255, 0.3));
   mask-image: radial-gradient(
     ellipse 67% 70% at center,
@@ -1444,7 +1451,7 @@ main {
     margin: 10px -55px 0;
   }
 
-  .glass-n-logo {
+  .glass-n-motion {
     width: min(108%, 650px);
   }
 

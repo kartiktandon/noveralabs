@@ -1,8 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import { type ReactNode, type SyntheticEvent, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { type ReactNode, type SyntheticEvent, useRef, useState } from 'react';
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from 'framer-motion';
 import {
   ArrowRight,
   ArrowUpRight,
@@ -144,7 +149,27 @@ const process = [
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [sent, setSent] = useState(false);
+  const heroRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
+  const { scrollYProgress: heroScrollProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const glassLogoY = useTransform(
+    heroScrollProgress,
+    [0, 1],
+    [0, reduceMotion ? 0 : 140],
+  );
+  const glassLogoRotate = useTransform(
+    heroScrollProgress,
+    [0, 1],
+    [0, reduceMotion ? 0 : 8],
+  );
+  const glassLogoScale = useTransform(
+    heroScrollProgress,
+    [0, 1],
+    [1, reduceMotion ? 1 : 0.82],
+  );
 
   function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -204,7 +229,7 @@ export default function Home() {
         </motion.div>
       )}
 
-      <section className="hero" id="top">
+      <section className="hero" id="top" ref={heroRef}>
         <div className="hero-grid" aria-hidden="true" />
         <div className="hero-copy">
           <motion.p
@@ -262,14 +287,23 @@ export default function Home() {
             <i />
           </div>
           <div className="orbit orbit-three" />
-          <Image
-            className="glass-n-logo"
-            src="/novera-3d-mark.png"
-            alt="Glass Nexora N surrounded by connected technology symbols"
-            width={1536}
-            height={1024}
-            priority
-          />
+          <motion.div
+            className="glass-n-motion"
+            style={{
+              y: glassLogoY,
+              rotate: glassLogoRotate,
+              scale: glassLogoScale,
+            }}
+          >
+            <Image
+              className="glass-n-logo"
+              src="/novera-3d-mark.png"
+              alt="Glass Nexora N surrounded by connected technology symbols"
+              width={1536}
+              height={1024}
+              priority
+            />
+          </motion.div>
           <div className="signal-card signal-clarity">
             <span>01</span>
             <strong>Clarity</strong>
