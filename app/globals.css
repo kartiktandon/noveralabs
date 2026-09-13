@@ -105,13 +105,32 @@ main {
 }
 
 .logo-link {
+  display: inline-flex;
   width: max-content;
 }
 
-.brand-logo {
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+}
+
+.brand-symbol {
   display: block;
-  width: 192px;
-  height: auto;
+  width: 38px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.brand-wordmark {
+  color: var(--navy);
+  font-family: var(--font-sora), sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .desktop-nav {
@@ -1257,8 +1276,9 @@ main {
   justify-content: space-between;
 }
 
-.mobile-menu-top .brand-logo {
-  width: 175px;
+.mobile-menu-top .brand-symbol {
+  width: 36px;
+  height: 45px;
 }
 
 .mobile-menu-top button {
@@ -1385,8 +1405,17 @@ main {
     padding: 0 20px;
   }
 
-  .brand-logo {
-    width: 164px;
+  .brand-lockup {
+    gap: 10px;
+  }
+
+  .brand-symbol {
+    width: 32px;
+    height: 40px;
+  }
+
+  .brand-wordmark {
+    font-size: 15px;
   }
 
   .hero {

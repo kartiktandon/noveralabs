@@ -17,9 +17,9 @@ export const metadata: Metadata = {
   description:
     'Nexora Tech turns complex technology into clear business momentum through digital products, custom platforms, and connected systems.',
   icons: {
-    icon: [{ url: '/nexora-tech-mark.png', type: 'image/png' }],
-    shortcut: '/nexora-tech-mark.png',
-    apple: '/nexora-tech-mark.png',
+    icon: [{ url: '/nexora-tech-mark-transparent.png', type: 'image/png' }],
+    shortcut: '/nexora-tech-mark-transparent.png',
+    apple: '/nexora-tech-mark-transparent.png',
   },
   openGraph: {
     title: 'Nexora Tech — Technology that moves business forward',

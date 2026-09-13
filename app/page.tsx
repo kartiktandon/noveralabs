@@ -46,14 +46,17 @@ function Reveal({
 
 function BrandLogo() {
   return (
-    <Image
-      className="brand-logo"
-      src="/nexora-tech-logo.png"
-      alt="Nexora Tech"
-      width={1760}
-      height={518}
-      priority
-    />
+    <span className="brand-lockup" aria-label="Nexora Tech">
+      <Image
+        className="brand-symbol"
+        src="/nexora-tech-mark-transparent.png"
+        alt=""
+        width={1120}
+        height={1405}
+        priority
+      />
+      <span className="brand-wordmark">NEXORA TECH</span>
+    </span>
   );
 }
 
@@ -351,10 +354,10 @@ export default function Home() {
         <Reveal className="system-demo">
           <aside className="demo-rail">
             <Image
-              src="/nexora-tech-mark.png"
+              src="/nexora-tech-mark-transparent.png"
               alt=""
-              width={413}
-              height={518}
+              width={1120}
+              height={1405}
             />
             {[Gauge, Database, Workflow, Bot].map((Icon, index) => (
               <span className={index === 0 ? 'active' : ''} key={index}>
@@ -557,10 +560,10 @@ export default function Home() {
       <footer className="site-footer">
         <div>
           <Image
-            src="/nexora-tech-mark.png"
+            src="/nexora-tech-mark-transparent.png"
             alt="Nexora Tech"
-            width={413}
-            height={518}
+            width={1120}
+            height={1405}
           />
           <span>NEXORA TECH</span>
         </div>
