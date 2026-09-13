@@ -323,12 +323,18 @@ main {
   place-items: center;
 }
 
-.momentum-stage > img {
-  width: min(38%, 250px);
+.glass-n-logo {
+  width: min(94%, 740px);
   height: auto;
   position: relative;
-  z-index: 4;
-  filter: drop-shadow(0 24px 50px rgba(51, 70, 255, 0.24));
+  z-index: 3;
+  filter: drop-shadow(0 30px 65px rgba(51, 70, 255, 0.3));
+  mask-image: radial-gradient(
+    ellipse 67% 70% at center,
+    #000 54%,
+    rgba(0, 0, 0, 0.88) 66%,
+    transparent 91%
+  );
 }
 
 .stage-glow {
@@ -1407,6 +1413,10 @@ main {
   .momentum-stage {
     min-height: 480px;
     margin: 10px -55px 0;
+  }
+
+  .glass-n-logo {
+    width: min(108%, 650px);
   }
 
   .signal-card {

@@ -260,10 +260,11 @@ export default function Home() {
           </div>
           <div className="orbit orbit-three" />
           <Image
-            src="/nexora-tech-mark.png"
-            alt=""
-            width={413}
-            height={518}
+            className="glass-n-logo"
+            src="/novera-3d-mark.png"
+            alt="Glass Nexora N surrounded by connected technology symbols"
+            width={1536}
+            height={1024}
             priority
           />
           <div className="signal-card signal-clarity">
