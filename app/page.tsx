@@ -1,6 +1,9 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
+import { Navbar } from '@/components/navbar';
+import { Footer } from '@/components/footer';
 import {
   type ReactNode,
   type SyntheticEvent,
@@ -208,21 +211,6 @@ function CapabilitiesRiver() {
   );
 }
 
-function BrandLogo() {
-  return (
-    <span className="brand-lockup" aria-label="Novera">
-      <Image
-        className="brand-symbol"
-        src="/novera-mark.png"
-        alt=""
-        width={1120}
-        height={1405}
-        priority
-      />
-      <span className="brand-wordmark">NOVERA</span>
-    </span>
-  );
-}
 
 function SectionIntro({
   eyebrow,
@@ -474,11 +462,9 @@ const dashboardViews = [
 
 export default function Home() {
   const [pageLoading, setPageLoading] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [syncingTelemetry, setSyncingTelemetry] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [dashboardTab, setDashboardTab] = useState(0);
   const [portfolioFilter, setPortfolioFilter] = useState<PortfolioCategory>('all');
   const heroRef = useRef<HTMLElement>(null);
@@ -490,11 +476,6 @@ export default function Home() {
     }, 1500);
     return () => clearTimeout(timer);
   }, []);
-
-  const { scrollY } = useScroll();
-  useMotionValueEvent(scrollY, 'change', (latest) => {
-    setScrolled(latest > 20);
-  });
 
   const { scrollYProgress: heroScrollProgress } = useScroll({
     target: heroRef,
@@ -594,57 +575,7 @@ export default function Home() {
         )}
       </AnimatePresence>
       <ScrollProgressBar />
-      <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
-        <a className="logo-link" href="#top" aria-label="Novera home">
-          <BrandLogo />
-        </a>
-        <nav className="desktop-nav" aria-label="Primary navigation">
-          <a href="#services">Services</a>
-          <a href="#portfolio">Portfolio</a>
-          <a href="#systems">Systems</a>
-          <a href="#process">Process</a>
-          <a href="#about">About</a>
-        </nav>
-        <a className="header-cta" href="#contact">
-          Start a project <ArrowUpRight />
-        </a>
-        <button
-          className="menu-button"
-          onClick={() => setMenuOpen(true)}
-          aria-label="Open menu"
-        >
-          <Menu />
-        </button>
-      </header>
-
-      {menuOpen && (
-        <motion.div
-          className="mobile-menu"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <div className="mobile-menu-top">
-            <BrandLogo />
-            <button onClick={() => setMenuOpen(false)} aria-label="Close menu">
-              <X />
-            </button>
-          </div>
-          <nav>
-            {['Services', 'Portfolio', 'Systems', 'Process', 'About', 'Contact'].map(
-              (item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {item}
-                  <ArrowUpRight />
-                </a>
-              ),
-            )}
-          </nav>
-        </motion.div>
-      )}
+      <Navbar />
 
       <section
         className="hero"
@@ -691,16 +622,16 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.22, ease }}
           >
-            <a
+            <Link
               className="button-primary"
-              href="#contact"
+              href="/contact"
               aria-label="Build what comes next"
             >
               Build what comes next <ArrowUpRight />
-            </a>
-            <a className="button-text" href="#services">
+            </Link>
+            <Link className="button-text" href="/services">
               Explore capabilities <ArrowRight />
-            </a>
+            </Link>
           </motion.div>
         </div>
 
@@ -823,12 +754,17 @@ export default function Home() {
                     <li key={tag}>{tag}</li>
                   ))}
                 </ul>
-                <a href="#contact" aria-label={`Discuss ${service.title}`}>
+                <Link href="/contact" aria-label={`Discuss ${service.title}`}>
                   Discuss your system <ArrowUpRight />
-                </a>
+                </Link>
               </Reveal>
             );
           })}
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '48px' }}>
+          <Link href="/services" className="button-secondary">
+            Explore all capabilities <ArrowRight />
+          </Link>
         </div>
       </section>
 
@@ -981,17 +917,22 @@ export default function Home() {
                   </div>
 
                   <div className="portfolio-card-footer">
-                    <a
-                      href="#contact"
+                    <Link
+                      href="/contact"
                       aria-label={`Start a project like ${project.title}`}
                     >
                       Discuss this build <ArrowUpRight />
-                    </a>
+                    </Link>
                   </div>
                 </motion.article>
               );
             })}
           </AnimatePresence>
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '48px' }}>
+          <Link href="/portfolio" className="button-secondary">
+            Explore all case studies <ArrowRight />
+          </Link>
         </div>
       </section>
 
@@ -1291,24 +1232,7 @@ export default function Home() {
         </Reveal>
       </section>
 
-      <footer className="site-footer">
-        <div>
-          <Image
-            src="/novera-mark.png"
-            alt="Novera"
-            width={1120}
-            height={1405}
-          />
-          <span>NOVERA</span>
-        </div>
-        <div className="footer-status-pill">
-          <span className="status-dot-pulse" />
-          <span>All Systems Operational · Sub-15ms Latency</span>
-        </div>
-        <a href="#top">
-          Back to top <ArrowUpRight />
-        </a>
-      </footer>
+      <Footer />
     </main>
   );
 }
