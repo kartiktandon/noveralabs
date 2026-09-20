@@ -13,7 +13,7 @@ const siteUrl =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: 'Novera — Technology that moves business forward',
+  title: 'Novera: Technology that moves business forward',
   description:
     'Novera turns complex technology into clear business momentum through digital products, custom platforms, and connected systems.',
   icons: {
@@ -22,20 +22,20 @@ export const metadata: Metadata = {
     apple: '/novera-mark.png',
   },
   openGraph: {
-    title: 'Novera — Technology that moves business forward',
+    title: 'Novera: Technology that moves business forward',
     description: 'Next-generation technology, made practical.',
     images: [
       {
         url: '/novera-og.png',
         width: 1200,
         height: 630,
-        alt: 'Novera — Technology that moves business forward.',
+        alt: 'Novera: Technology that moves business forward.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Novera — Technology that moves business forward',
+    title: 'Novera: Technology that moves business forward',
     description: 'Next-generation technology, made practical.',
     images: ['/novera-og.png'],
   },
@@ -46,6 +46,13 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: 'window.process = window.process || { env: {} };',
+          }}
+        />
+      </head>
       <body className={`${sora.variable} ${inter.variable}`}>{children}</body>
     </html>
   );
