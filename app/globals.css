@@ -2403,3 +2403,58 @@ main {
     animation: none !important;
   }
 }
+
+/* 7. Initial Site Preloader */
+.site-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #020b1e;
+  pointer-events: all;
+}
+
+.preloader-glow {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(8, 184, 248, 0.22), rgba(20, 107, 255, 0.08) 40%, transparent 70%);
+  filter: blur(25px);
+  pointer-events: none;
+}
+
+.preloader-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.preloader-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.preloader-brand {
+  font-family: var(--font-sora), sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+  color: #ffffff;
+}
+
+.preloader-status {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+

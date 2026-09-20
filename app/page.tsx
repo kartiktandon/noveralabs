@@ -35,6 +35,7 @@ import {
   Workflow,
   X,
 } from 'lucide-react';
+import { Component as LumaSpin } from '@/components/ui/luma-spin';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -472,13 +473,23 @@ const dashboardViews = [
 ];
 
 export default function Home() {
+  const [pageLoading, setPageLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [syncingTelemetry, setSyncingTelemetry] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [dashboardTab, setDashboardTab] = useState(0);
   const [portfolioFilter, setPortfolioFilter] = useState<PortfolioCategory>('all');
   const heroRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPageLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, 'change', (latest) => {
@@ -542,13 +553,46 @@ export default function Home() {
       ? portfolioProjects
       : portfolioProjects.filter((p) => p.categoryTag === portfolioFilter);
 
+  function handleTabChange(index: number) {
+    if (index === dashboardTab) return;
+    setSyncingTelemetry(true);
+    setDashboardTab(index);
+    setTimeout(() => {
+      setSyncingTelemetry(false);
+    }, 650);
+  }
+
   function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSent(true);
+    setSubmitting(true);
+    setTimeout(() => {
+      setSubmitting(false);
+      setSent(true);
+    }, 1300);
   }
 
   return (
     <main>
+      <AnimatePresence>
+        {pageLoading && (
+          <motion.div
+            key="site-preloader"
+            className="site-preloader dark"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 1.03 }}
+            transition={{ duration: 0.55, ease }}
+          >
+            <div className="preloader-glow" />
+            <div className="preloader-content">
+              <LumaSpin />
+              <div className="preloader-meta">
+                <span className="preloader-brand">NOVERA</span>
+                <span className="preloader-status">Initializing systems</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <ScrollProgressBar />
       <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
         <a className="logo-link" href="#top" aria-label="Novera home">
@@ -981,7 +1025,7 @@ export default function Home() {
                   type="button"
                   aria-label={tab.label}
                   className={dashboardTab === index ? 'active' : ''}
-                  onClick={() => setDashboardTab(index)}
+                  onClick={() => handleTabChange(index)}
                 >
                   <Icon />
                 </button>
@@ -1003,7 +1047,32 @@ export default function Home() {
                   <h3>{dashboardViews[dashboardTab].title}</h3>
                 </div>
                 <span>
-                  <i /> Systems live
+                  {syncingTelemetry ? (
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        color: 'var(--cyan)',
+                      }}
+                    >
+                      <span
+                        className="dark"
+                        style={{
+                          transform: 'scale(0.32)',
+                          margin: '-22px -20px',
+                          display: 'inline-block',
+                        }}
+                      >
+                        <LumaSpin />
+                      </span>
+                      Syncing telemetry...
+                    </span>
+                  ) : (
+                    <>
+                      <i /> Systems live
+                    </>
+                  )}
                 </span>
               </div>
               <div className="metric-grid">
@@ -1153,7 +1222,25 @@ export default function Home() {
           <p>Tell us what should feel clearer, move faster, or work better.</p>
         </Reveal>
         <Reveal className="contact-panel" delay={0.08}>
-          {sent ? (
+          {submitting ? (
+            <motion.div
+              className="form-success"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.35, ease }}
+              style={{ alignItems: 'flex-start' }}
+            >
+              <div className="dark" style={{ marginBottom: '24px' }}>
+                <LumaSpin />
+              </div>
+              <h3 style={{ fontSize: '30px', margin: '0 0 12px', color: 'var(--white)' }}>
+                Connecting to Novera systems
+              </h3>
+              <p style={{ maxWidth: '440px', margin: 0, color: '#aebbd3', lineHeight: 1.6 }}>
+                Processing and encrypting your project brief telemetry.
+              </p>
+            </motion.div>
+          ) : sent ? (
             <motion.div
               className="form-success"
               initial={{ opacity: 0 }}
@@ -1167,7 +1254,14 @@ export default function Home() {
                 This demonstration is ready to connect to your preferred form
                 backend.
               </p>
-              <button onClick={() => setSent(false)}>Send another</button>
+              <button
+                onClick={() => {
+                  setSent(false);
+                  setSubmitting(false);
+                }}
+              >
+                Send another
+              </button>
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit}>
