@@ -460,18 +460,10 @@ const dashboardViews = [
 ];
 
 export default function Home() {
-  const [pageLoading, setPageLoading] = useState(true);
   const [syncingTelemetry, setSyncingTelemetry] = useState(false);
   const [dashboardTab, setDashboardTab] = useState(0);
   const [portfolioFilter, setPortfolioFilter] = useState<PortfolioCategory>('all');
   const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setPageLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   function handleSpotlightMove(e: React.MouseEvent<HTMLElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -500,26 +492,6 @@ export default function Home() {
 
   return (
     <main>
-      <AnimatePresence>
-        {pageLoading && (
-          <motion.div
-            key="site-preloader"
-            className="site-preloader dark"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.03 }}
-            transition={{ duration: 0.55, ease }}
-          >
-            <div className="preloader-glow" />
-            <div className="preloader-content">
-              <LumaSpin />
-              <div className="preloader-meta">
-                <span className="preloader-brand">NOVERA</span>
-                <span className="preloader-status">Initializing systems</span>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       <ScrollProgressBar />
       <Navbar />
 
