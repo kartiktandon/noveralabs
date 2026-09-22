@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from '@/components/ui/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Case } from '@/components/ui/cases-with-infinite-scroll';
 import { ContainerScroll } from '@/components/ui/container-scroll-animation';

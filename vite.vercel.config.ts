@@ -12,6 +12,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      'next/link': path.resolve('components/ui/link.tsx'),
       tailwindcss: path.resolve('node_modules/tailwindcss/index.css'),
       'tw-animate-css': path.resolve(
         'node_modules/tw-animate-css/dist/tw-animate.css',

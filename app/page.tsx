@@ -1,12 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from '@/components/ui/link';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import {
   type ReactNode,
-  type SyntheticEvent,
   useEffect,
   useRef,
   useState,
@@ -24,15 +23,12 @@ import {
   ArrowRight,
   ArrowUpRight,
   Bot,
-  Check,
   Code2,
   Database,
   Gauge,
-  Menu,
   Network,
   Sparkles,
   Workflow,
-  X,
 } from 'lucide-react';
 import { Component as LumaSpin } from '@/components/ui/luma-spin';
 import ScrollMorphHero from '@/components/ui/scroll-morph-hero';
@@ -102,42 +98,7 @@ function Reveal({
   );
 }
 
-/** 21st.dev Interactive Cursor Spotlight Card */
-function SpotlightCard({
-  children,
-  className = '',
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  const cardRef = useRef<HTMLDivElement>(null);
 
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    cardRef.current.style.setProperty('--mouse-x', `${x}px`);
-    cardRef.current.style.setProperty('--mouse-y', `${y}px`);
-    cardRef.current.style.setProperty('--spotlight-opacity', '1');
-  }
-
-  function handleMouseLeave() {
-    if (!cardRef.current) return;
-    cardRef.current.style.setProperty('--spotlight-opacity', '0');
-  }
-
-  return (
-    <div
-      ref={cardRef}
-      className={`spotlight-card ${className}`}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
-      {children}
-    </div>
-  );
-}
 
 
 /** Number Ticker for Live Animated Numbers on Scroll */

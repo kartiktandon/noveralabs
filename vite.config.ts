@@ -1,5 +1,6 @@
 import { sites } from '@openai/sites-vite-plugin';
 import tailwindcss from '@tailwindcss/postcss';
+import path from 'node:path';
 import vinext from 'vinext';
 import { defineConfig } from 'vite';
 import hostingConfig from './.openai/hosting.json';
@@ -47,6 +48,11 @@ export default defineConfig(async () => {
   return {
     define: {
       'process.env.__NEXT_APP_NAV_FAIL_HANDLING': JSON.stringify(false),
+    },
+    resolve: {
+      alias: {
+        'next/link': path.resolve('components/ui/link.tsx'),
+      },
     },
     css: { postcss: { plugins: [tailwindcss()] } },
     server: isCodexSeatbeltSandbox
