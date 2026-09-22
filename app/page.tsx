@@ -16,15 +16,11 @@ import {
   animate,
   motion,
   useInView,
-  useMotionValue,
-  useMotionValueEvent,
   useReducedMotion,
   useScroll,
   useSpring,
-  useTransform,
 } from 'framer-motion';
 import {
-  ArrowDown,
   ArrowRight,
   ArrowUpRight,
   Bot,
@@ -39,6 +35,8 @@ import {
   X,
 } from 'lucide-react';
 import { Component as LumaSpin } from '@/components/ui/luma-spin';
+import ScrollMorphHero from '@/components/ui/scroll-morph-hero';
+import { HomeLower } from '@/components/home-lower';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -467,7 +465,6 @@ export default function Home() {
   const [syncingTelemetry, setSyncingTelemetry] = useState(false);
   const [dashboardTab, setDashboardTab] = useState(0);
   const [portfolioFilter, setPortfolioFilter] = useState<PortfolioCategory>('all');
-  const heroRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -476,47 +473,6 @@ export default function Home() {
     }, 1500);
     return () => clearTimeout(timer);
   }, []);
-
-  const { scrollYProgress: heroScrollProgress } = useScroll({
-    target: heroRef,
-    offset: ['start start', 'end start'],
-  });
-  const glassLogoY = useTransform(
-    heroScrollProgress,
-    [0, 1],
-    [0, reduceMotion ? 0 : 140],
-  );
-  const glassLogoScale = useTransform(
-    heroScrollProgress,
-    [0, 1],
-    [1, reduceMotion ? 1 : 0.82],
-  );
-
-  const emblemX = useMotionValue(0);
-  const emblemY = useMotionValue(0);
-  const springCfg = { damping: 24, stiffness: 180 };
-  const emblemRotateX = useSpring(
-    useTransform(emblemY, [-0.5, 0.5], [14, -14]),
-    springCfg,
-  );
-  const emblemRotateY = useSpring(
-    useTransform(emblemX, [-0.5, 0.5], [-14, 14]),
-    springCfg,
-  );
-
-  function handleHeroMouseMove(e: React.MouseEvent<HTMLElement>) {
-    if (reduceMotion) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    emblemX.set(x);
-    emblemY.set(y);
-  }
-
-  function handleHeroMouseLeave() {
-    emblemX.set(0);
-    emblemY.set(0);
-  }
 
   function handleSpotlightMove(e: React.MouseEvent<HTMLElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -577,145 +533,11 @@ export default function Home() {
       <ScrollProgressBar />
       <Navbar />
 
-      <section
-        className="hero"
-        id="top"
-        ref={heroRef}
-        onMouseMove={handleHeroMouseMove}
-        onMouseLeave={handleHeroMouseLeave}
-      >
-        <div className="hero-grid" aria-hidden="true" />
-        <div className="hero-copy">
-          <motion.div
-            className="eyebrow-badge"
-            initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease }}
-          >
-            <span className="radar-ping" />
-            <span>Next-generation technology, made practical</span>
-          </motion.div>
-          <motion.h1
-            initial={{
-              opacity: 0,
-              y: reduceMotion ? 0 : 24,
-              filter: reduceMotion ? 'none' : 'blur(12px)',
-            }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.85, delay: 0.06, ease }}
-          >
-            Technology that moves{' '}
-            <em className="animate-text-shimmer">business forward.</em>
-          </motion.h1>
-          <motion.p
-            className="hero-lede"
-            initial={{ opacity: 0, y: reduceMotion ? 0 : 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.14, ease }}
-          >
-            Novera turns complex technology into clear business momentum -
-            through digital products, custom platforms, and connected systems.
-          </motion.p>
-          <motion.div
-            className="hero-actions"
-            initial={{ opacity: 0, y: reduceMotion ? 0 : 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.22, ease }}
-          >
-            <Link
-              className="button-primary"
-              href="/contact"
-              aria-label="Build what comes next"
-            >
-              Build what comes next <ArrowUpRight />
-            </Link>
-            <Link className="button-text" href="/services">
-              Explore capabilities <ArrowRight />
-            </Link>
-          </motion.div>
-        </div>
+      <ScrollMorphHero />
 
-        <motion.div
-          className="momentum-stage"
-          initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.94 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: 0.12, ease }}
-          aria-label="Novera brand mark representing connected business momentum"
-        >
-          <div className="stage-glow" />
-          <div className="orbit orbit-one">
-            <i />
-            <i />
-          </div>
-          <div className="orbit orbit-two">
-            <i />
-          </div>
-          <div className="orbit orbit-three" />
-          <motion.div
-            className="glass-n-motion"
-            style={{
-              y: glassLogoY,
-              scale: glassLogoScale,
-              rotateX: reduceMotion ? 0 : emblemRotateX,
-              rotateY: reduceMotion ? 0 : emblemRotateY,
-              transformPerspective: 1000,
-            }}
-          >
-            <Image
-              className="glass-n-logo"
-              src="/novera-3d-mark.png"
-              alt="Glass Novera N surrounded by connected technology symbols"
-              width={1536}
-              height={1024}
-              priority
-            />
-          </motion.div>
-          <motion.div
-            className="signal-card signal-clarity"
-            animate={reduceMotion ? {} : { y: [-6, 6, -6] }}
-            transition={{ repeat: Infinity, duration: 4.8, ease: 'easeInOut' }}
-          >
-            <strong>Clarity</strong>
-            <small>See the right move</small>
-          </motion.div>
-          <motion.div
-            className="signal-card signal-capability"
-            animate={reduceMotion ? {} : { y: [6, -6, 6] }}
-            transition={{
-              repeat: Infinity,
-              duration: 5.6,
-              ease: 'easeInOut',
-              delay: 0.5,
-            }}
-          >
-            <strong>Capability</strong>
-            <small>Build the right system</small>
-          </motion.div>
-          <motion.div
-            className="signal-card signal-progress"
-            animate={reduceMotion ? {} : { y: [-6, 6, -6] }}
-            transition={{
-              repeat: Infinity,
-              duration: 5.2,
-              ease: 'easeInOut',
-              delay: 1,
-            }}
-          >
-            <strong>Progress</strong>
-            <small>Measure what changes</small>
-          </motion.div>
-        </motion.div>
+      <HomeLower />
 
-        <a
-          href="#services"
-          className="hero-scroll-cue"
-          aria-label="Scroll to explore capabilities"
-        >
-          <span>Explore</span>
-          <ArrowDown className="hero-scroll-arrow" />
-        </a>
-      </section>
-
+      <div className="home-legacy" aria-hidden="true">
       <CapabilitiesRiver />
 
       <section className="services" id="services">
@@ -1231,6 +1053,7 @@ export default function Home() {
           )}
         </Reveal>
       </section>
+      </div>
 
       <Footer />
     </main>
