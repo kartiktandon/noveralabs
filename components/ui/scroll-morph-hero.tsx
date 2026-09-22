@@ -173,20 +173,57 @@ export default function ScrollMorphHero() {
     <section ref={ref} className="morph-hero" id="top" aria-label="Novera engineering studio">
       <div className="morph-hero-grid" aria-hidden="true" /><div className="morph-hero-glow" aria-hidden="true" />
       <div className="morph-intro" aria-hidden={phase !== 'circle'}>
-        <motion.p className="morph-kicker" initial={{ opacity: 0 }} animate={phase === 'circle' ? { opacity: Math.max(0, 1 - morph * 2.4) } : { opacity: 0 }}>
-          Independent engineering studio · India / Worldwide
-        </motion.p>
-        <motion.h1 initial={{ opacity: 0, y: 24, filter: 'blur(12px)' }}
-          animate={phase === 'circle' ? { opacity: Math.max(0, 1 - morph * 2.2), y: 0, filter: 'blur(0px)' } : { opacity: 0, y: 24, filter: 'blur(12px)' }} transition={{ duration: 0.9 }}>
-          We engineer digital products<br /><em>built to move.</em>
+        <motion.div
+          className="morph-kicker-wrap"
+          initial={{ opacity: 0, y: 10 }}
+          animate={phase === 'circle' ? { opacity: Math.max(0, 1 - morph * 2.4), y: 0 } : { opacity: 0, y: 10 }}
+          transition={{ duration: 0.6 }}
+        >
+          <span className="morph-kicker-badge">
+            <span className="morph-kicker-dot" />
+            <span>Independent engineering studio · India / Worldwide</span>
+          </span>
+        </motion.div>
+        <motion.h1
+          className="morph-headline"
+          initial={{ opacity: 0, y: 24, filter: 'blur(12px)' }}
+          animate={
+            phase === 'circle'
+              ? { opacity: Math.max(0, 1 - morph * 2.2), y: 0, filter: 'blur(0px)' }
+              : { opacity: 0, y: 24, filter: 'blur(12px)' }
+          }
+          transition={{ duration: 0.9 }}
+        >
+          <span className="morph-headline-row">
+            <span className="morph-text-lead">We engineer</span>{' '}
+            <span className="morph-text-highlight">digital products</span>
+          </span>
+          <br />
+          <span className="morph-headline-row morph-headline-sub">
+            <em className="morph-text-accent">built to move.</em>
+          </span>
         </motion.h1>
-        <motion.p className="morph-intro-copy" initial={{ opacity: 0 }} animate={phase === 'circle' ? { opacity: Math.max(0, 0.72 - morph) } : { opacity: 0 }}>
+        <motion.p
+          className="morph-intro-copy"
+          initial={{ opacity: 0 }}
+          animate={phase === 'circle' ? { opacity: Math.max(0, 0.72 - morph) } : { opacity: 0 }}
+        >
           Web platforms, mobile applications, and custom CRM systems — designed and built as one connected experience.
         </motion.p>
       </div>
       <motion.div className="morph-active-copy" style={{ opacity: contentOpacity, y: contentY }}>
-        <span className="morph-kicker">Strategy · Design · Engineering</span>
-        <h2>From ambitious idea<br />to <em>working system.</em></h2>
+        <div className="morph-kicker-wrap">
+          <span className="morph-kicker-badge">
+            <span className="morph-kicker-dot" />
+            <span>Strategy · Design · Engineering</span>
+          </span>
+        </div>
+        <h2 className="morph-headline">
+          <span className="morph-text-lead">From ambitious idea</span>
+          <br />
+          <span className="morph-text-highlight">to </span>
+          <em className="morph-text-accent">working system.</em>
+        </h2>
         <p>One senior team for the interface your customers see and the infrastructure your business runs on.</p>
         <div className="morph-actions"><Link href="/contact">Start a project <ArrowUpRight /></Link><Link href="/portfolio">View selected work</Link></div>
       </motion.div>

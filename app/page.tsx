@@ -37,6 +37,7 @@ import {
 import { Component as LumaSpin } from '@/components/ui/luma-spin';
 import ScrollMorphHero from '@/components/ui/scroll-morph-hero';
 import { HomeLower } from '@/components/home-lower';
+import { ContactSection } from '@/components/contact-section';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -460,8 +461,6 @@ const dashboardViews = [
 
 export default function Home() {
   const [pageLoading, setPageLoading] = useState(true);
-  const [sent, setSent] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [syncingTelemetry, setSyncingTelemetry] = useState(false);
   const [dashboardTab, setDashboardTab] = useState(0);
   const [portfolioFilter, setPortfolioFilter] = useState<PortfolioCategory>('all');
@@ -497,15 +496,6 @@ export default function Home() {
     setTimeout(() => {
       setSyncingTelemetry(false);
     }, 650);
-  }
-
-  function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      setSent(true);
-    }, 1300);
   }
 
   return (
@@ -967,92 +957,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="contact" id="contact">
-        <div className="contact-orbit" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </div>
-        <Reveal className="contact-copy">
-          <p className="eyebrow">
-            <span /> Ready when you are
-          </p>
-          <h2>
-            Build smarter systems.
-            <br />
-            Create what comes next.
-          </h2>
-          <p>Tell us what should feel clearer, move faster, or work better.</p>
-        </Reveal>
-        <Reveal className="contact-panel" delay={0.08}>
-          {submitting ? (
-            <motion.div
-              className="form-success"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.35, ease }}
-              style={{ alignItems: 'flex-start' }}
-            >
-              <div className="dark" style={{ marginBottom: '24px' }}>
-                <LumaSpin />
-              </div>
-              <h3 style={{ fontSize: '30px', margin: '0 0 12px', color: 'var(--white)' }}>
-                Connecting to Novera systems
-              </h3>
-              <p style={{ maxWidth: '440px', margin: 0, color: '#aebbd3', lineHeight: 1.6 }}>
-                Processing and encrypting your project brief telemetry.
-              </p>
-            </motion.div>
-          ) : sent ? (
-            <motion.div
-              className="form-success"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <span>
-                <Check />
-              </span>
-              <h3>Message captured.</h3>
-              <p>
-                This demonstration is ready to connect to your preferred form
-                backend.
-              </p>
-              <button
-                onClick={() => {
-                  setSent(false);
-                  setSubmitting(false);
-                }}
-              >
-                Send another
-              </button>
-            </motion.div>
-          ) : (
-            <form onSubmit={handleSubmit}>
-              <label>
-                <span>Your name</span>
-                <input required placeholder="Name" />
-              </label>
-              <label>
-                <span>Work email</span>
-                <input required type="email" placeholder="you@company.com" />
-              </label>
-              <label className="full">
-                <span>What should we build?</span>
-                <textarea
-                  required
-                  placeholder="A digital product, a better CRM, or a connected system..."
-                />
-              </label>
-              <div className="form-footer full">
-                <p>A rough idea is enough to begin.</p>
-                <button type="submit">
-                  Start the conversation <ArrowUpRight />
-                </button>
-              </div>
-            </form>
-          )}
-        </Reveal>
-      </section>
+      <ContactSection />
       </div>
 
       <Footer />
