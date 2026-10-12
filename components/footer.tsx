@@ -49,7 +49,7 @@ export function Footer() {
               <li>
                 <Link href="/portfolio" className="footer-link">
                   <span>Portfolio</span>
-                  <span className="footer-pill-badge">5 Live</span>
+                  <span className="footer-pill-badge">6 Live</span>
                 </Link>
               </li>
               <li>
@@ -119,6 +119,11 @@ export function Footer() {
               <li>
                 <Link href="/portfolio" className="footer-link">
                   <span>WorkPulse.in · Ops Telemetry</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/portfolio" className="footer-link">
+                  <span>Ryve · Streetwear & D2C</span>
                 </Link>
               </li>
             </ul>

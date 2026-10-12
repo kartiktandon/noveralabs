@@ -32,6 +32,7 @@ import {
   MapPin,
   Radio,
   BarChart3,
+  ShoppingBag,
 } from 'lucide-react';
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -52,7 +53,7 @@ export interface ClientProject {
   deliverables: string[];
   techStack: string[];
   badgeColor: string;
-  previewKind: 'sort-marketing' | 'hepki' | 'detailing-adda' | 'boombastic' | 'workpulse';
+  previewKind: 'sort-marketing' | 'hepki' | 'detailing-adda' | 'boombastic' | 'workpulse' | 'ryve';
   architecture: {
     frontend: string;
     backend: string;
@@ -133,6 +134,40 @@ export const CLIENT_PROJECTS: ClientProject[] = [
     impactComparison: {
       before: 'Manual phone calls & unverified WhatsApp coordination',
       after: 'Self-serve booking platform with verified security & real-time dispatch',
+    },
+  },
+  {
+    id: 'ryve',
+    categoryTag: 'products',
+    categoryLabel: 'Streetwear & D2C Storefront',
+    client: 'Ryve',
+    title: 'Ryve',
+    tagline: 'High-velocity headless D2C streetwear storefront with sub-second checkout.',
+    body: 'A distinctive graphic tees & modern streetwear commerce platform architected for flash drop surges, headless product discovery, instant cart-to-checkout flows, and automated inventory sync.',
+    liveUrl: 'https://ryve.co.in/',
+    metrics: [
+      { label: 'Drop Velocity', value: '< 380ms', detail: 'Global Edge TTFB at peak drop' },
+      { label: 'Checkout Flow', value: '+42%', detail: 'Mobile conversion funnel lift' },
+    ],
+    deliverables: [
+      'Headless high-velocity collection drop engine',
+      'Instant product search & dynamic catalog filters',
+      'Mobile-first slide-out cart & 1-tap checkout flow',
+      'Edge-cached dynamic media optimization',
+    ],
+    techStack: ['Next.js 14', 'Shopify Storefront API', 'Tailwind CSS', 'Framer Motion', 'Edge Functions', 'Webhooks'],
+    badgeColor: '#f59e0b',
+    previewKind: 'ryve',
+    architecture: {
+      frontend: 'Next.js 14 App Router + Framer Motion Physics',
+      backend: 'Shopify Storefront GraphQL + Edge Webhook Handlers',
+      database: 'Distributed Edge Key-Value Cache + Real-Time Inventory Store',
+      infrastructure: 'Global Edge CDN with Dynamic Image CDN',
+      throughput: 'Sub-400ms catalog queries during peak viral streetwear drops',
+    },
+    impactComparison: {
+      before: 'Monolithic storefront lag with cart abandonment during high-traffic drop moments',
+      after: 'Instantaneous headless drop experience with sub-second checkout and zero drop crashes',
     },
   },
   {
@@ -593,6 +628,132 @@ function PreviewWorkPulse() {
   );
 }
 
+function PreviewRyve() {
+  const [selectedDrop, setSelectedDrop] = useState<'DROP 04' | 'ACID WASH' | 'VINTAGE GRAPHIC'>('DROP 04');
+  const [selectedSize, setSelectedSize] = useState<'S' | 'M' | 'L' | 'XL'>('L');
+  const [isAdded, setIsAdded] = useState(false);
+
+  const dropDetails = {
+    'DROP 04': { title: 'Overload Graphic Heavyweight Tee', price: '₹1,499', stock: '18 Units Left', tag: 'Selling Fast' },
+    'ACID WASH': { title: 'Dystopia Acid-Wash Vintage Tee', price: '₹1,699', stock: '9 Units Left', tag: 'Limited Batch' },
+    'VINTAGE GRAPHIC': { title: 'Cyber-Rebel Oversized Boxy Tee', price: '₹1,599', stock: '24 Units Left', tag: 'Fresh Drop' },
+  };
+
+  const current = dropDetails[selectedDrop];
+
+  return (
+    <div className="ps-preview-canvas ps-preview-ryve">
+      <div className="ps-mock-header">
+        <div className="ps-mock-dots">
+          <span />
+          <span />
+          <span />
+        </div>
+        <div className="ps-mock-title">ryve.co.in // DROP CONSOLE</div>
+        <span className="ps-mock-badge" style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)' }}>
+          LIVE STOREFRONT
+        </span>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {/* Drop category filter tabs */}
+        <div className="flex gap-1.5 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06] overflow-x-auto">
+          {(['DROP 04', 'ACID WASH', 'VINTAGE GRAPHIC'] as const).map((drop) => (
+            <button
+              key={drop}
+              type="button"
+              className={`flex-1 py-1.5 px-3 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
+                selectedDrop === drop
+                  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              onClick={() => {
+                setSelectedDrop(drop);
+                setIsAdded(false);
+              }}
+            >
+              {drop}
+            </button>
+          ))}
+        </div>
+
+        {/* Featured drop card */}
+        <div className="p-4 rounded-2xl bg-[#0c101c]/90 border border-amber-500/20 flex flex-col gap-3.5 shadow-xl">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  {current.tag}
+                </span>
+                <span className="text-[10px] font-mono text-slate-400">EDGE TTFB: 320ms</span>
+              </div>
+              <h4 className="text-white font-semibold text-sm tracking-tight">{current.title}</h4>
+            </div>
+            <div className="text-right shrink-0">
+              <span className="text-amber-400 font-mono font-bold text-base">{current.price}</span>
+              <small className="block text-[10px] text-slate-400">{current.stock}</small>
+            </div>
+          </div>
+
+          {/* Size picker */}
+          <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/[0.06]">
+            <span className="text-[11px] text-slate-400 font-mono">SELECT SIZE:</span>
+            <div className="flex gap-1.5">
+              {(['S', 'M', 'L', 'XL'] as const).map((sz) => (
+                <button
+                  key={sz}
+                  type="button"
+                  className={`w-7 h-7 rounded-md text-xs font-mono font-bold transition-all ${
+                    selectedSize === sz
+                      ? 'bg-amber-500 text-black shadow-[0_0_12px_rgba(245,158,11,0.4)]'
+                      : 'bg-white/[0.05] text-slate-300 hover:text-white border border-white/[0.08]'
+                  }`}
+                  onClick={() => setSelectedSize(sz)}
+                >
+                  {sz}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick interactive order action */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
+                isAdded
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-500 text-black hover:brightness-110 shadow-[0_0_20px_rgba(245,158,11,0.25)]'
+              }`}
+              onClick={() => setIsAdded(!isAdded)}
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>{isAdded ? 'Added to Bag (Ready for 1-Tap Checkout)' : 'Quick Bag — Instant Checkout'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Live commerce telemetry strip */}
+        <div className="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] text-[11px]">
+          <div>
+            <span className="block text-[9px] font-mono text-slate-400">CATALOG CACHE</span>
+            <strong className="text-white font-mono">99.8% Hit Rate</strong>
+          </div>
+          <div>
+            <span className="block text-[9px] font-mono text-slate-400">PAYMENT ROUTING</span>
+            <strong className="text-emerald-400 font-mono">Razorpay Escrow</strong>
+          </div>
+          <div>
+            <span className="block text-[9px] font-mono text-slate-400">DROP SURGE</span>
+            <strong className="text-amber-400 font-mono">Zero Crash</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ══════════════════════════════════════════════════════════════
    Architecture Blueprint View (High-Tech System Diagram)
    ══════════════════════════════════════════════════════════════ */
@@ -880,6 +1041,7 @@ export function PortfolioShowcase() {
                       {activeProject.previewKind === 'detailing-adda' && <PreviewDetailingAdda />}
                       {activeProject.previewKind === 'boombastic' && <PreviewBoombastic />}
                       {activeProject.previewKind === 'workpulse' && <PreviewWorkPulse />}
+                      {activeProject.previewKind === 'ryve' && <PreviewRyve />}
                     </>
                   )}
                   {stageMode === 'blueprint' && <StageBlueprintView project={activeProject} />}

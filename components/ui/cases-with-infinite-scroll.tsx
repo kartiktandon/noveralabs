@@ -65,13 +65,22 @@ export const CLIENT_CASES: ClientCase[] = [
     accent: "#388bfd",
     photo: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop",
   },
+  {
+    name: "Ryve",
+    category: "Streetwear & D2C",
+    url: "https://ryve.co.in/",
+    tagline: "High-Velocity Commerce",
+    logo: "/clients/ryve-logo.png",
+    accent: "#f59e0b",
+    photo: "https://images.unsplash.com/photo-1523381294911-8d3cead13475?q=80&w=800&auto=format&fit=crop",
+  },
 ];
 
 function Case() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
 
-  // Repeat the 5 clients 3 times to make 15 total items for smooth infinite cycling
+  // Repeat the 6 clients 3 times to make 18 total items for smooth infinite cycling
   const repeatedCases = [...CLIENT_CASES, ...CLIENT_CASES, ...CLIENT_CASES];
 
   useEffect(() => {

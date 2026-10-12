@@ -377,6 +377,10 @@ export function HomeLower() {
                   <span className="text-slate-300 font-medium text-[11px]">WorkPulse Compliance Audit</span>
                   <span className="font-mono text-[#a855f7] text-[10px]">SOC2 Clear</span>
                 </div>
+                <div className="hidden sm:flex p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05] items-center justify-between text-xs">
+                  <span className="text-slate-300 font-medium text-[11px]">Ryve D2C Drop Engine</span>
+                  <span className="font-mono text-[#f59e0b] text-[10px]">320ms · 100% Hit</span>
+                </div>
               </div>
             </div>
 

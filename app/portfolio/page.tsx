@@ -279,7 +279,7 @@ export default function PortfolioPage() {
             transition={{ duration: 0.6, ease }}
           >
             <span className="pp-live-dot" />
-            <span>5 PRODUCTION PLATFORMS DEPLOYED · 100% CLIENT CODE OWNERSHIP</span>
+            <span>6 PRODUCTION PLATFORMS DEPLOYED · 100% CLIENT CODE OWNERSHIP</span>
           </motion.div>
 
           {/* Kinetic Display Headline */}
@@ -318,9 +318,9 @@ export default function PortfolioPage() {
             <div className="pp-category-filter-pills">
               {(['all', 'crm', 'products', 'tools'] as ShowcaseCategory[]).map((cat) => {
                 const labelMap = {
-                  all: 'All Systems (5)',
+                  all: 'All Systems (6)',
                   crm: 'Custom CRMs (2)',
-                  products: 'Digital Products (2)',
+                  products: 'Digital Products (3)',
                   tools: 'Internal Ops (1)',
                 };
                 const isActive = activeCategory === cat;
