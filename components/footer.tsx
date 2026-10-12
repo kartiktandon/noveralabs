@@ -49,7 +49,6 @@ export function Footer() {
               <li>
                 <Link href="/portfolio" className="footer-link">
                   <span>Portfolio</span>
-                  <span className="footer-pill-badge">6 Live</span>
                 </Link>
               </li>
               <li>
