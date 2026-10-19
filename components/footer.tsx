@@ -125,6 +125,11 @@ export function Footer() {
                   <span>Ryve · Streetwear & D2C</span>
                 </Link>
               </li>
+              <li>
+                <Link href="/portfolio" className="footer-link">
+                  <span>POPOBOZO · Fragrance Store</span>
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

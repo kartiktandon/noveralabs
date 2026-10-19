@@ -279,7 +279,7 @@ export default function PortfolioPage() {
             transition={{ duration: 0.6, ease }}
           >
             <span className="pp-live-dot" />
-            <span>6 PRODUCTION PLATFORMS DEPLOYED · 100% CLIENT CODE OWNERSHIP</span>
+            <span>{CLIENT_PROJECTS.length} CLIENT PROJECTS · 100% CLIENT CODE OWNERSHIP</span>
           </motion.div>
 
           {/* Kinetic Display Headline */}

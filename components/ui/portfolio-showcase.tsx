@@ -53,7 +53,7 @@ export interface ClientProject {
   deliverables: string[];
   techStack: string[];
   badgeColor: string;
-  previewKind: 'sort-marketing' | 'hepki' | 'detailing-adda' | 'boombastic' | 'workpulse' | 'ryve';
+  previewKind: 'sort-marketing' | 'hepki' | 'detailing-adda' | 'boombastic' | 'workpulse' | 'ryve' | 'popobozo';
   architecture: {
     frontend: string;
     backend: string;
@@ -68,6 +68,35 @@ export interface ClientProject {
 }
 
 export const CLIENT_PROJECTS: ClientProject[] = [
+  {
+    id: 'popobozo',
+    categoryTag: 'products',
+    categoryLabel: 'Fragrance & D2C Storefront',
+    client: 'POPOBOZO',
+    title: 'POPOBOZO',
+    tagline: 'An online home for distinctive perfumes and signature scents.',
+    body: 'A fragrance storefront with curated collections, product discovery, customer accounts, and online shopping.',
+    liveUrl: 'https://popobozo.com/',
+    metrics: [
+      { label: 'Collections', value: '3', detail: 'Classics, Exclusive Elegance, and Signature Pieces' },
+      { label: 'Storefront', value: 'Live', detail: 'Shop fragrances online' },
+    ],
+    deliverables: ['Collection browsing', 'Product pages', 'Shopping cart', 'Customer accounts'],
+    techStack: ['Shopify', 'E-commerce'],
+    badgeColor: '#d9a66c',
+    previewKind: 'popobozo',
+    architecture: {
+      frontend: 'Shopify storefront',
+      backend: 'Shopify commerce',
+      database: 'Product catalog',
+      infrastructure: 'Shopify hosting',
+      throughput: 'Not publicly disclosed',
+    },
+    impactComparison: {
+      before: 'Not publicly documented',
+      after: 'Live fragrance storefront with collections and online checkout',
+    },
+  },
   {
     id: 'sort-marketing',
     categoryTag: 'products',
@@ -1042,6 +1071,13 @@ export function PortfolioShowcase() {
                       {activeProject.previewKind === 'boombastic' && <PreviewBoombastic />}
                       {activeProject.previewKind === 'workpulse' && <PreviewWorkPulse />}
                       {activeProject.previewKind === 'ryve' && <PreviewRyve />}
+                      {activeProject.previewKind === 'popobozo' && (
+                        <div className="ps-preview-canvas flex flex-col items-center justify-center gap-4 bg-[#211b1a] text-[#f5e5d2]">
+                          <span className="text-xs uppercase tracking-[0.35em]">Signature fragrances</span>
+                          <strong className="font-serif text-5xl tracking-widest">POPOBOZO</strong>
+                          <span className="text-sm">Crafted to linger. Designed to be remembered.</span>
+                        </div>
+                      )}
                     </>
                   )}
                   {stageMode === 'blueprint' && <StageBlueprintView project={activeProject} />}
