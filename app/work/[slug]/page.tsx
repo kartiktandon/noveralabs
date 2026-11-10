@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
+import caseStudySlugs from '@/lib/case-study-slugs.json';
 
-const slugs = new Set(['ryve', 'popobozo', 'mediflow', 'detailing-adda', 'boombastic', 'flavours-of-gwalior-app', 'meta-ads-cockpit', 'flavours-of-gwalior-pos']);
+const slugs = new Set(caseStudySlugs);
 
 export default async function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

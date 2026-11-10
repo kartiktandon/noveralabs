@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Novera Labs · Content editor</title>
+</head>
+<body>
+<script>window.CMS_MANUAL_INIT = true;</script>
+<script src="https://unpkg.com/decap-cms@3.3.3/dist/decap-cms.js"></script>
+<script>
+  // GitHub sign-in runs through this site's own /api/auth, so it works on any domain or preview URL
+  CMS.init({
+    config: {
+      backend: {
+        name: 'github',
+        repo: 'kartiktandon/noveralabs',
+        branch: 'main',
+        base_url: location.origin,
+        auth_endpoint: 'api/auth',
+      },
+    },
+  });
+</script>
+</body>
+</html>
