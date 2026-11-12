@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
+import caseStudySlugs from '@/lib/case-study-slugs.json';
 
 const validSlugs = new Set([
   'services',
@@ -11,14 +12,8 @@ const validSlugs = new Set([
   'service-crms',
   'service-ecommerce',
   'service-ai-automation',
-  'case-study-ryve',
-  'case-study-popobozo',
-  'case-study-mediflow',
-  'case-study-detailing-adda',
-  'case-study-boombastic',
-  'case-study-flavours-of-gwalior-app',
-  'case-study-flavours-of-gwalior-pos',
-  'case-study-meta-ads-cockpit',
+  // Case studies come from the editor (content/case-studies), listed by scripts/build-content.mjs
+  ...caseStudySlugs.map((s) => `case-study-${s}`),
 ]);
 
 const aliasMap: Record<string, string> = {

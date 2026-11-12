@@ -4,6 +4,7 @@
   "framework": "nitro",
   "buildCommand": "npm run build:vercel",
   "rewrites": [
+    { "source": "/admin", "destination": "/admin/index.html" },
     { "source": "/services", "destination": "/services.html" },
     { "source": "/work", "destination": "/work.html" },
     { "source": "/how-we-work", "destination": "/how-we-work.html" },

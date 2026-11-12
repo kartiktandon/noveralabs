@@ -34,7 +34,7 @@
 
   // Scroll reveal: sections and cards fade up as they come into view
   if (!reduce && 'IntersectionObserver' in window) {
-    var sel = ['.hero > *', '.svc-hero > div > *', '.svc-hero .svc-art', '.case-top > *', '.contact-top > *', '.clients', '.promises > *',
+    var sel = ['.hero > *', '.svc-hero > div > *', '.svc-hero .svc-art', '.case-top > *', '.contact-top > *', '.clients', '.clients-band', '.promises > *',
       '.sec .stack', '.sec .head-row > p', '.svc-card', '.wcard', '.combo', '.inc > div', '.gets > div', '.tech > div', '.app-card',
       '.row-item', '.more-row', '.faq-item', '.timeline li', '.statement p', '.quote-card', '.home-pricing .band', '.tcard', '.phone',
       '.picker .band', '.pay-band .band', '.psteps li', '.terms > div', '.case-media', '.story', '.feat', '.shots > div', '.stack-chips',
