@@ -4,33 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<!-- Absolute path, so the config loads whether the page is opened as /admin or /admin/ -->
-<link href="/admin/config.yml" type="text/yaml" rel="cms-config-url">
-<title>Novera Labs · Content editor</title>
+<title>Novera Labs · Admin</title>
+<link rel="icon" href="/assets/img/mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body>
-<script>window.CMS_MANUAL_INIT = true;</script>
-<script src="https://unpkg.com/decap-cms@3.3.3/dist/decap-cms.js"></script>
-<script>
-  // Sign-in runs through this site's own /api/auth (username and password), so it works on any domain or preview URL
-  CMS.init({
-    config: {
-      backend: {
-        name: 'github',
-        repo: 'kartiktandon/noveralabs',
-        branch: 'main',
-        base_url: location.origin,
-        auth_endpoint: 'api/auth',
-      },
-    },
-  });
-  // The sign-in uses the editor's own username and password, so don't mention GitHub on the button
-  new MutationObserver(function () {
-    var walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    while (walk.nextNode()) {
-      if (walk.currentNode.nodeValue.trim() === 'Login with GitHub') walk.currentNode.nodeValue = 'Sign in';
-    }
-  }).observe(document.body, { childList: true, subtree: true });
-</script>
+<div id="app" class="boot"><div class="boot-mark"><img src="/assets/img/mark-white.png" alt=""></div></div>
+<div id="toasts" aria-live="polite"></div>
+<script type="module" src="/admin/admin.js"></script>
 </body>
 </html>
