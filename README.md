@@ -42,28 +42,26 @@ This repository contains the UI/UX frontend only. It does not include a database
 
 ## Editing case studies and "More we've built" (no code)
 
-The case study pages, the project cards on the Work page and the "More we've built" rows are built from
-files in `content/`:
+Open `https://<your-domain>/admin` and sign in. There you can add, edit, reorder and delete case
+studies (card, page, images, live preview on desktop and phone) and the "More we've built" rows (with
+PDF uploads). Saving puts the changes on the site straight away, with no rebuild.
 
-- `content/case-studies/*.json` → `public/case-study-<slug>.html` and the cards on `public/work.html`
-- `content/more-work/*.json` → the rows under "More we've built" (a row with a PDF opens it in a new tab)
+How it works:
 
-Edit them in the browser at `https://<your-domain>/admin`. Each save commits to `main`, Vercel rebuilds,
-and the change is live in a minute or two. `scripts/build-content.mjs` runs before every build; run it by
-hand with `npm run content`. Don't hand-edit the generated case study pages or the parts of `work.html`
-between the `cms:` comments, since the next build overwrites them. The case study page layout lives in
-`templates/case-study.html`.
+- Saves and uploads go to Vercel Blob (`lib/site/store.ts`). Every save also keeps a copy under
+  `site/history/` in the Blob store, so an older version can be restored.
+- `/work`, `/case-study-<slug>` and `/work/<slug>` are rendered on request from the saved content by
+  `app/[slug]/route.ts` and `app/work/[slug]/route.ts`, using `lib/site/render.mjs` and the layouts in
+  `templates/`.
+- Until the first save, the pages show the starting content in `content/*.json`, packed into
+  `lib/site/defaults.json` by `scripts/build-content.mjs` (runs before every build, or `npm run content`).
+- The admin panel lives in `public/admin/` and talks to `app/api/admin/*`.
 
-### One-time setup for the editor login
+### One-time setup
 
-The editor uses its own username and password (no GitHub account needed to edit).
+1. In the Vercel project, open **Storage**, click **Create Database**, pick **Blob** and connect it to this
+   project. Vercel adds `BLOB_READ_WRITE_TOKEN` on its own.
+2. Redeploy.
 
-1. On GitHub, create a fine-grained personal access token (Settings → Developer settings → Personal access
-   tokens → Fine-grained tokens). Repository access: only this repository. Permissions: Contents → Read and write.
-2. In the Vercel project, add these environment variables, then redeploy:
-   - `ADMIN_USERNAME` and `ADMIN_PASSWORD`: the login for `/admin`
-   - `GITHUB_TOKEN`: the token from step 1
-3. Open `/admin`, click the sign-in button and enter the username and password.
-
-Saves are committed to the repo under the token owner's name. Anyone with the password can edit the site,
-so keep it private and change it in Vercel if it leaks.
+The login is kept in `lib/site/auth.ts` as hashes. To change it, set `ADMIN_USERNAME` and
+`ADMIN_PASSWORD` in Vercel's environment variables and redeploy. Uploads are limited to 4.5 MB per file.

@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
       { source: '/', destination: '/index.html' },
       { source: '/admin', destination: '/admin/index.html' },
       { source: '/services', destination: '/services.html' },
-      { source: '/work', destination: '/work.html' },
       { source: '/how-we-work', destination: '/how-we-work.html' },
       { source: '/contact', destination: '/contact.html' },
       { source: '/website', destination: '/service-websites.html' },
@@ -25,7 +24,6 @@ const nextConfig: NextConfig = {
       { source: '/automation', destination: '/service-ai-automation.html' },
       { source: '/ai-automation', destination: '/service-ai-automation.html' },
       { source: '/service-:slug', destination: '/service-:slug.html' },
-      { source: '/case-study-:slug', destination: '/case-study-:slug.html' },
     ];
   },
 };
