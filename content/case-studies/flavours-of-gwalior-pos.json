@@ -60,5 +60,7 @@
     }
   ],
   "stack": [],
-  "seo_description": "How Novera Labs built an internal POS system for Flavours of Gwalior, with access levels and in-depth reporting."
+  "seo_description": "How Novera Labs built an internal POS system for Flavours of Gwalior, with access levels and in-depth reporting.",
+  "show_on_home": true,
+  "home_label": "Internal POS"
 }

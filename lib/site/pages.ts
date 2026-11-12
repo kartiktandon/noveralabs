@@ -1,5 +1,6 @@
-// Serves the Work page and the case study pages from the content saved in /admin.
-import { renderCasePage, renderWorkPage } from './render.mjs';
+// Serves the home page, the Work page and the case study pages from the content saved in /admin.
+import defaults from './defaults.json';
+import { renderCasePage, renderHomePage, renderWorkPage } from './render.mjs';
 import { getContent, templates } from './store';
 
 function html(body: string, status = 200) {
@@ -13,9 +14,20 @@ function html(body: string, status = 200) {
   });
 }
 
+// Content saved before the home page fields existed takes them from the starting content
+export function withHomeFields<T extends { cases: Record<string, any>[] }>(content: T): T {
+  const start = new Map(defaults.cases.map((c: Record<string, any>) => [c.slug, c]));
+  for (const c of content.cases) {
+    const d = start.get(c.slug);
+    if (!('show_on_home' in c)) c.show_on_home = d ? d.show_on_home !== false : true;
+    if (!('home_label' in c) && d) c.home_label = d.home_label;
+  }
+  return content;
+}
+
 async function content() {
   try {
-    return await getContent();
+    return withHomeFields(await getContent());
   } catch (e) {
     // If storage is down, keep the site up with the starting content
     console.error(e);
@@ -23,6 +35,10 @@ async function content() {
     const defaults = (await import('./defaults.json')).default;
     return normalize({ cases: defaults.cases, more: defaults.more });
   }
+}
+
+export async function homePage() {
+  return html(renderHomePage(templates.home, await content()));
 }
 
 export async function workPage() {

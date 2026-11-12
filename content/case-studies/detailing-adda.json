@@ -73,5 +73,7 @@
     }
   ],
   "stack": [],
-  "seo_description": "How Novera Labs built a custom CRM for Detailing Adda, a car detailing studio: customers, cars, bookings, payments and owner reports in one place."
+  "seo_description": "How Novera Labs built a custom CRM for Detailing Adda, a car detailing studio: customers, cars, bookings, payments and owner reports in one place.",
+  "show_on_home": true,
+  "home_label": "Private CRM"
 }

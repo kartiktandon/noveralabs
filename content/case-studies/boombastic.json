@@ -60,5 +60,7 @@
     }
   ],
   "stack": [],
-  "seo_description": "How Novera Labs built a custom CRM for Boombastic to track customers, visits, pipeline, follow-ups and payments."
+  "seo_description": "How Novera Labs built a custom CRM for Boombastic to track customers, visits, pipeline, follow-ups and payments.",
+  "show_on_home": true,
+  "home_label": "Private CRM"
 }

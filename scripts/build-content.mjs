@@ -1,7 +1,7 @@
-// Packs the starting content and page templates for the Work and case study pages:
+// Packs the starting content and page templates for the home, Work and case study pages:
 //   content/case-studies/*.json + content/more-work/*.json + templates/*.html -> lib/site/defaults.json
 //   lib/site/render.mjs -> public/admin/render.mjs (the admin panel's live preview uses the same renderer)
-// The live pages show what is saved from /admin (Vercel Blob) and fall back to these defaults
+// The live pages show what is saved from /admin (MySQL) and fall back to these defaults
 // until the first save. Runs before every build; run it on its own with: npm run content
 import { copyFileSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -25,6 +25,7 @@ const content = normalize({
 const templates = {
   case: readFileSync(path.join(ROOT, 'templates', 'case-study.html'), 'utf8'),
   work: readFileSync(path.join(ROOT, 'templates', 'work.html'), 'utf8'),
+  home: readFileSync(path.join(ROOT, 'templates', 'home.html'), 'utf8'),
 };
 
 writeFileSync(path.join(ROOT, 'lib', 'site', 'defaults.json'), JSON.stringify({ ...content, templates }) + '\n');

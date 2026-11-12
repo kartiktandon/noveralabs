@@ -60,5 +60,7 @@
     }
   ],
   "stack": [],
-  "seo_description": "How Novera Labs built a premium website for popobozo, a perfume brand."
+  "seo_description": "How Novera Labs built a premium website for popobozo, a perfume brand.",
+  "show_on_home": true,
+  "home_label": "popobozo.com"
 }

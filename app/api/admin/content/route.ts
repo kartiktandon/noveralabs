@@ -2,6 +2,7 @@ import { isSignedIn, json } from '@/lib/site/auth';
 import { checkStorage, getContent, saveContent, templates, type Content } from '@/lib/site/store';
 import defaults from '@/lib/site/defaults.json';
 import { normalize } from '@/lib/site/render.mjs';
+import { withHomeFields } from '@/lib/site/pages';
 
 export async function GET(request: Request) {
   if (!(await isSignedIn(request))) return json({ error: 'Please sign in.' }, 401);
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
     return json({ ...content, saved: false, storage: false, storageError: problem === 'not-set-up' ? '' : problem, templates });
   }
   try {
-    return json({ ...(await getContent()), storage: true, templates });
+    return json({ ...withHomeFields(await getContent()), storage: true, templates });
   } catch (e) {
     return json({ error: (e as Error).message }, 502);
   }
