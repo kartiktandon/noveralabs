@@ -34,6 +34,7 @@ const aliasMap: Record<string, string> = {
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug.replace(/\.html$/, '');
+  if (slug === 'index') return Response.redirect(new URL('/', request.url), 308);
   if (slug === 'work') return workPage();
   if (slug.startsWith('case-study-')) return casePage(slug.slice('case-study-'.length), request);
   if (staticPages.has(slug)) return Response.redirect(new URL(`/${slug}.html`, request.url), 307);

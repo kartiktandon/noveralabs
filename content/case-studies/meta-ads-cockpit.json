@@ -60,5 +60,7 @@
     }
   ],
   "stack": [],
-  "seo_description": "How Novera Labs built Meta Ads Cockpit, a CRM and AI ads engine for leads, follow-ups and Meta ad recommendations."
+  "seo_description": "How Novera Labs built Meta Ads Cockpit, a CRM and AI ads engine for leads, follow-ups and Meta ad recommendations.",
+  "show_on_home": true,
+  "home_label": "Internal tool"
 }

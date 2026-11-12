@@ -3,7 +3,6 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
-      { source: '/', destination: '/index.html' },
       { source: '/admin', destination: '/admin/index.html' },
       { source: '/services', destination: '/services.html' },
       { source: '/how-we-work', destination: '/how-we-work.html' },

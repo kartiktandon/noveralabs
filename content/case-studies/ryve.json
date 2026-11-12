@@ -60,5 +60,7 @@
     }
   ],
   "stack": [],
-  "seo_description": "How Novera Labs built a fast, conversion-focused website for Ryve, a streetwear brand."
+  "seo_description": "How Novera Labs built a fast, conversion-focused website for Ryve, a streetwear brand.",
+  "show_on_home": true,
+  "home_label": "ryve.co.in"
 }

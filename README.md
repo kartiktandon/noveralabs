@@ -53,7 +53,8 @@ How it works:
   restored) and `site_files` (uploaded images and PDFs, served from `/api/files/<id>/<name>`).
 - `/work`, `/case-study-<slug>` and `/work/<slug>` are rendered on request from the saved content by
   `app/[slug]/route.ts` and `app/work/[slug]/route.ts`, using `lib/site/render.mjs` and the layouts in
-  `templates/`.
+  `templates/`. The home page (`app/route.ts`, layout `templates/home.html`) is rendered the same way,
+  so its "Selected work" list follows the case studies (each one has a "Home page" switch in /admin).
 - Until the first save, the pages show the starting content in `content/*.json`, packed into
   `lib/site/defaults.json` by `scripts/build-content.mjs` (runs before every build, or `npm run content`).
 - The admin panel lives in `public/admin/` and talks to `app/api/admin/*`.

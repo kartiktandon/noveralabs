@@ -384,6 +384,8 @@ function newCase() {
     slug: '',
     name: '',
     show_on_work: true,
+    show_on_home: true,
+    home_label: '',
     number: String((nums.length ? Math.max(...nums) : 0) + 1).padStart(2, '0'),
     type_label: '',
     filter: 'Website',
@@ -461,7 +463,7 @@ function renderCase(c) {
       ${storageBanner()}
       <div class="editor">
         <form class="form" id="case-form" autocomplete="off" onsubmit="return false">
-          <nav class="sections-nav"><a href="#s-card">Card</a><a href="#s-top">Page top</a><a href="#s-story">Story</a><a href="#s-built">What we built</a><a href="#s-screens">Screens</a><a href="#s-quote">Quote</a><a href="#s-seo">Google</a></nav>
+          <nav class="sections-nav"><a href="#s-card">Card</a><a href="#s-home">Home page</a><a href="#s-top">Page top</a><a href="#s-story">Story</a><a href="#s-built">What we built</a><a href="#s-screens">Screens</a><a href="#s-quote">Quote</a><a href="#s-seo">Google</a></nav>
 
           <section class="sec" id="s-card">
             <div class="sec-head"><div><h3>Card on the Work page</h3><p>What people see in the grid before they open the case study.</p></div>
@@ -479,6 +481,12 @@ function renderCase(c) {
               ${input(c, 'card_line', 'Card description', { area: true, rows: 2, placeholder: 'One or two lines about the project' })}
               ${imageField(c, 'card_image', 'Card image', 'Landscape, about 1200 × 830 px')}
             </div>
+          </section>
+
+          <section class="sec" id="s-home">
+            <div class="sec-head"><div><h3>Home page</h3><p>The “Selected work” list on the home page. It uses the name, type label, card description and card image above, in the same order as the Work page.</p></div>
+              <label class="switch"><input type="checkbox" data-path="show_on_home" data-bool ${c.show_on_home !== false ? 'checked' : ''}>Show</label></div>
+            ${input(c, 'home_label', 'Browser bar text', { placeholder: 'e.g. ryve.co.in or Private CRM', hint: 'Shown in the browser frame above the image. Leave empty to use the type label.' })}
           </section>
 
           <section class="sec" id="s-top">

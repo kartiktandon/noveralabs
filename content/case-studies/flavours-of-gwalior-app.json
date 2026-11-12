@@ -60,5 +60,7 @@
     }
   ],
   "stack": [],
-  "seo_description": "How Novera Labs built an in-store food ordering app for Flavours of Gwalior."
+  "seo_description": "How Novera Labs built an in-store food ordering app for Flavours of Gwalior.",
+  "show_on_home": true,
+  "home_label": "Android & iOS app"
 }

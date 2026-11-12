@@ -60,5 +60,7 @@
     }
   ],
   "stack": [],
-  "seo_description": "How Novera Labs built a custom CRM for MediFlow, a pharma and path lab."
+  "seo_description": "How Novera Labs built a custom CRM for MediFlow, a pharma and path lab.",
+  "show_on_home": false,
+  "home_label": "Private CRM"
 }
