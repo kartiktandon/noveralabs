@@ -24,9 +24,9 @@ export async function checkLogin(username: string, password: string) {
   return [same(u, userHash), same(p, passHash)].every(Boolean);
 }
 
-// Sessions are signed with a server-only secret: the storage token when it exists
+// Sessions are signed with a server-only secret: the database password when it exists
 async function key() {
-  const secret = process.env.ADMIN_SECRET || process.env.BLOB_READ_WRITE_TOKEN || PASS_HASH + (process.env.ADMIN_PASSWORD || '');
+  const secret = process.env.ADMIN_SECRET || process.env.MYSQL_PASSWORD || PASS_HASH + (process.env.ADMIN_PASSWORD || '');
   return crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
 }
 

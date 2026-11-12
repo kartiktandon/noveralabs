@@ -136,6 +136,7 @@ img { display: block; max-width: 100%; }
 .banner svg { width: 20px; height: 20px; color: #B7791F; flex: 0 0 auto; margin-top: 1px; }
 .banner b { display: block; margin-bottom: 2px; }
 .banner ol { margin: 6px 0 0; padding-left: 18px; color: var(--muted); }
+.banner code { font: 12.5px var(--mono); background: rgba(183, 121, 31, 0.1); padding: 1px 5px; border-radius: 5px; word-break: break-word; }
 
 .toolbar { display: flex; gap: 10px; align-items: center; margin: 8px 0 20px; flex-wrap: wrap; }
 .search { position: relative; flex: 1; min-width: 200px; max-width: 360px; }
