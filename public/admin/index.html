@@ -12,7 +12,7 @@
 <script>window.CMS_MANUAL_INIT = true;</script>
 <script src="https://unpkg.com/decap-cms@3.3.3/dist/decap-cms.js"></script>
 <script>
-  // GitHub sign-in runs through this site's own /api/auth, so it works on any domain or preview URL
+  // Sign-in runs through this site's own /api/auth (username and password), so it works on any domain or preview URL
   CMS.init({
     config: {
       backend: {
@@ -24,6 +24,13 @@
       },
     },
   });
+  // The sign-in uses the editor's own username and password, so don't mention GitHub on the button
+  new MutationObserver(function () {
+    var walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    while (walk.nextNode()) {
+      if (walk.currentNode.nodeValue.trim() === 'Login with GitHub') walk.currentNode.nodeValue = 'Sign in';
+    }
+  }).observe(document.body, { childList: true, subtree: true });
 </script>
 </body>
 </html>

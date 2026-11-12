@@ -54,10 +54,16 @@ hand with `npm run content`. Don't hand-edit the generated case study pages or t
 between the `cms:` comments, since the next build overwrites them. The case study page layout lives in
 `templates/case-study.html`.
 
-### One-time setup for the editor sign-in
+### One-time setup for the editor login
 
-1. On GitHub, go to Settings → Developer settings → OAuth Apps → New OAuth App.
-   Homepage URL: `https://<your-domain>`. Authorization callback URL: `https://<your-domain>/api/callback`.
-2. In the Vercel project, add the environment variables `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
-   from that app, then redeploy.
-3. Anyone who edits needs write access to this repository.
+The editor uses its own username and password (no GitHub account needed to edit).
+
+1. On GitHub, create a fine-grained personal access token (Settings → Developer settings → Personal access
+   tokens → Fine-grained tokens). Repository access: only this repository. Permissions: Contents → Read and write.
+2. In the Vercel project, add these environment variables, then redeploy:
+   - `ADMIN_USERNAME` and `ADMIN_PASSWORD`: the login for `/admin`
+   - `GITHUB_TOKEN`: the token from step 1
+3. Open `/admin`, click the sign-in button and enter the username and password.
+
+Saves are committed to the repo under the token owner's name. Anyone with the password can edit the site,
+so keep it private and change it in Vercel if it leaks.
