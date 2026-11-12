@@ -1,11 +1,18 @@
 import { isSignedIn, json } from '@/lib/site/auth';
-import { getContent, saveContent, storageReady, templates, type Content } from '@/lib/site/store';
+import { checkStorage, getContent, saveContent, templates, type Content } from '@/lib/site/store';
+import defaults from '@/lib/site/defaults.json';
+import { normalize } from '@/lib/site/render.mjs';
 
 export async function GET(request: Request) {
   if (!(await isSignedIn(request))) return json({ error: 'Please sign in.' }, 401);
+  // If the database is missing or unreachable, still open the panel and say why saving is off
+  const problem = await checkStorage();
+  if (problem) {
+    const content = normalize({ cases: defaults.cases, more: defaults.more });
+    return json({ ...content, saved: false, storage: false, storageError: problem === 'not-set-up' ? '' : problem, templates });
+  }
   try {
-    const content = await getContent();
-    return json({ ...content, storage: storageReady(), templates });
+    return json({ ...(await getContent()), storage: true, templates });
   } catch (e) {
     return json({ error: (e as Error).message }, 502);
   }
@@ -13,8 +20,9 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
   if (!(await isSignedIn(request))) return json({ error: 'Please sign in again.' }, 401);
-  if (!storageReady()) {
-    return json({ error: 'Saving is not switched on yet. Connect a Blob store to this project in Vercel (Storage tab), then redeploy.' }, 503);
+  const problem = await checkStorage();
+  if (problem) {
+    return json({ error: problem === 'not-set-up' ? 'Saving is not switched on yet. Add the MySQL settings in Vercel, then redeploy.' : `Can't reach the database: ${problem}` }, 503);
   }
   const body = (await request.json().catch(() => null)) as Content | null;
   if (!body || !Array.isArray(body.cases) || !Array.isArray(body.more)) return json({ error: 'Nothing to save.' }, 400);

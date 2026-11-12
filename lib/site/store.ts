@@ -1,48 +1,58 @@
-// Where the admin panel saves content and uploads: Vercel Blob.
-// Connect a Blob store to the Vercel project once (Storage → Create → Blob → Connect); Vercel then
-// adds BLOB_READ_WRITE_TOKEN by itself. Until then the pages show lib/site/defaults.json.
-// Talks to the Blob REST API directly so the site needs no extra package.
+// Where the admin panel saves content and uploads: your MySQL database.
+// Set these in Vercel (Settings → Environment Variables), then redeploy:
+//   MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE
+//   MYSQL_SSL_CA  the CA certificate, pasted in full (-----BEGIN CERTIFICATE----- ...), if your host gives one
+// The tables are created on first use. Until the database is set up the pages show lib/site/defaults.json.
 import defaults from './defaults.json';
 import { normalize } from './render.mjs';
 
 export type Content = { cases: Record<string, any>[]; more: Record<string, any>[] };
-type Blob = { url: string; pathname: string; uploadedAt: string };
-
-const API = process.env.VERCEL_BLOB_API_URL || 'https://blob.vercel-storage.com';
-const CONTENT = 'site/content.json';
+type Pool = import('mysql2/promise').Pool;
 
 export const templates = defaults.templates;
-export const storageReady = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+export const storageReady = () => Boolean(process.env.MYSQL_HOST && process.env.MYSQL_USER && process.env.MYSQL_DATABASE);
 
-function headers(extra: Record<string, string> = {}) {
-  return { authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`, 'x-api-version': '7', ...extra };
-}
+let pool: Promise<Pool> | null = null;
+let tablesReady: Promise<void> | null = null;
 
-async function fail(res: Response, what: string): Promise<never> {
-  const body = await res.text().catch(() => '');
-  throw new Error(`${what} failed (${res.status}): ${body.slice(0, 300)}`);
-}
-
-async function list(prefix: string): Promise<Blob[]> {
-  const res = await fetch(`${API}?prefix=${encodeURIComponent(prefix)}&limit=1000`, { headers: headers(), cache: 'no-store' });
-  if (!res.ok) await fail(res, 'Reading storage');
-  return ((await res.json()) as { blobs: Blob[] }).blobs || [];
-}
-
-export async function put(pathname: string, body: BodyInit, contentType: string) {
-  const res = await fetch(`${API}/?pathname=${encodeURIComponent(pathname)}`, {
-    method: 'PUT',
-    body,
-    headers: headers({
-      'x-content-type': contentType,
-      'x-add-random-suffix': '0',
-      'x-allow-overwrite': '1',
-      'x-cache-control-max-age': '60',
-      'x-vercel-blob-access': 'public',
+// One small connection pool per server instance, created on first use
+async function db() {
+  pool ??= import('mysql2/promise').then((mysql) =>
+    mysql.createPool({
+      host: process.env.MYSQL_HOST,
+      port: Number(process.env.MYSQL_PORT) || 3306,
+      user: process.env.MYSQL_USER,
+      password: process.env.MYSQL_PASSWORD,
+      database: process.env.MYSQL_DATABASE,
+      // Some setups store a pasted certificate's line breaks as "\n"
+      ssl: process.env.MYSQL_SSL_CA
+        ? { ca: process.env.MYSQL_SSL_CA.replace(/\\n/g, '\n'), rejectUnauthorized: true }
+        : process.env.MYSQL_SSL === 'false'
+          ? undefined
+          : { rejectUnauthorized: true },
+      connectionLimit: 3,
+      connectTimeout: 10000,
+      enableKeepAlive: true,
     }),
+  );
+  const p = await pool;
+  tablesReady ??= (async () => {
+    await p.query(`CREATE TABLE IF NOT EXISTS site_content (
+      id VARCHAR(32) PRIMARY KEY, data LONGTEXT NOT NULL,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)`);
+    await p.query(`CREATE TABLE IF NOT EXISTS site_content_history (
+      id INT AUTO_INCREMENT PRIMARY KEY, data LONGTEXT NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
+    await p.query(`CREATE TABLE IF NOT EXISTS site_files (
+      id VARCHAR(32) PRIMARY KEY, name VARCHAR(200) NOT NULL, type VARCHAR(100) NOT NULL,
+      size INT NOT NULL, data LONGBLOB NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
+  })().catch((e) => {
+    tablesReady = null;
+    throw e;
   });
-  if (!res.ok) await fail(res, 'Saving to storage');
-  return (await res.json()) as Blob;
+  await tablesReady;
+  return p;
 }
 
 const fallback = (): Content => normalize({ cases: defaults.cases, more: defaults.more });
@@ -50,19 +60,59 @@ const fallback = (): Content => normalize({ cases: defaults.cases, more: default
 // What the site shows: the last save from /admin, or the starting content
 export async function getContent(): Promise<Content & { saved: boolean }> {
   if (!storageReady()) return { ...fallback(), saved: false };
-  const blob = (await list(CONTENT)).find((b) => b.pathname === CONTENT);
-  if (!blob) return { ...fallback(), saved: false };
-  // The query string skips the storage CDN's cache, so a save shows at once
-  const res = await fetch(`${blob.url}?v=${Date.parse(blob.uploadedAt) || Date.now()}`, { cache: 'no-store' });
-  if (!res.ok) await fail(res, 'Reading content');
-  return { ...normalize(await res.json()), saved: true };
+  const [rows] = await (await db()).query("SELECT data FROM site_content WHERE id = 'main'");
+  const row = (rows as { data: string }[])[0];
+  if (!row) return { ...fallback(), saved: false };
+  return { ...normalize(JSON.parse(row.data)), saved: true };
 }
 
 export async function saveContent(content: Content) {
   const clean = normalize(content);
-  const body = JSON.stringify(clean, null, 2);
-  // Keep every version, so an old one can be restored if something is deleted by mistake
-  await put(`site/history/${new Date().toISOString().replace(/[:.]/g, '-')}.json`, body, 'application/json');
-  await put(CONTENT, body, 'application/json');
+  const body = JSON.stringify(clean);
+  const conn = await (await db()).getConnection();
+  try {
+    await conn.beginTransaction();
+    // Keep every version, so an old one can be restored if something is deleted by mistake
+    await conn.query('INSERT INTO site_content_history (data) VALUES (?)', [body]);
+    await conn.query(
+      "INSERT INTO site_content (id, data) VALUES ('main', ?) ON DUPLICATE KEY UPDATE data = VALUES(data)",
+      [body],
+    );
+    await conn.commit();
+  } catch (e) {
+    await conn.rollback().catch(() => {});
+    throw e;
+  } finally {
+    conn.release();
+  }
   return clean;
+}
+
+// Uploaded images and PDFs live in the database and are served from /api/files/<id>/<name>
+export async function saveFile(name: string, type: string, data: ArrayBuffer) {
+  const id = crypto.randomUUID().replace(/-/g, '').slice(0, 24);
+  await (await db()).query('INSERT INTO site_files (id, name, type, size, data) VALUES (?, ?, ?, ?, ?)', [
+    id,
+    name,
+    type,
+    data.byteLength,
+    Buffer.from(data),
+  ]);
+  return { url: `/api/files/${id}/${encodeURIComponent(name)}` };
+}
+
+export async function getFile(id: string) {
+  const [rows] = await (await db()).query('SELECT name, type, data FROM site_files WHERE id = ?', [id]);
+  return (rows as { name: string; type: string; data: Buffer }[])[0] || null;
+}
+
+// For the admin panel: is the database reachable? Returns the error message if not.
+export async function checkStorage() {
+  if (!storageReady()) return 'not-set-up';
+  try {
+    await db();
+    return '';
+  } catch (e) {
+    return (e as Error).message || 'Could not connect to the database.';
+  }
 }

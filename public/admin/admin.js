@@ -38,6 +38,7 @@ const state = {
   more: [],
   templates: null,
   storage: false,
+  storageError: '',
   saved: '',
   saving: false,
   filter: 'All',
@@ -162,6 +163,7 @@ async function load() {
   state.more = data.more;
   state.templates = data.templates;
   state.storage = data.storage;
+  state.storageError = data.storageError || '';
   state.saved = snapshot();
   route();
 }
@@ -206,7 +208,7 @@ document.addEventListener('keydown', (e) => {
 
 // ---------- Uploads ----------
 async function upload(file) {
-  if (!state.storage) throw new Error('Uploads switch on once a Blob store is connected in Vercel.');
+  if (!state.storage) throw new Error('Uploads switch on once the database is connected in Vercel.');
   if (file.size > 4.5 * 1024 * 1024) throw new Error('That file is over 4.5 MB. Please compress it and try again.');
   const res = await fetch('/api/admin/upload', {
     method: 'POST',
@@ -232,7 +234,7 @@ function shell(active, content) {
       <a class="nav" href="#/cases" ${active === 'cases' ? 'aria-current="page"' : ''}>${icon('grid')}Case studies<span class="count">${state.cases.length}</span></a>
       <a class="nav" href="#/more" ${active === 'more' ? 'aria-current="page"' : ''}>${icon('list')}More we’ve built<span class="count">${state.more.length}</span></a>
       <div class="bottom">
-        <div class="status${state.storage ? '' : ' off'}"><b><i></i>${state.storage ? 'Saving is on' : 'Saving is off'}</b>${state.storage ? 'Saves go live on the site straight away.' : 'Connect a Blob store in Vercel to save.'}</div>
+        <div class="status${state.storage ? '' : ' off'}"><b><i></i>${state.storage ? 'Saving is on' : 'Saving is off'}</b>${state.storage ? 'Saves go live on the site straight away.' : (state.storageError ? 'Can’t reach the database.' : 'Add the database settings in Vercel to save.')}</div>
         <a class="nav" href="/work" target="_blank" rel="noopener">${icon('ext')}View site</a>
         <button class="nav" data-logout>${icon('out')}Sign out</button>
       </div>
@@ -244,7 +246,9 @@ function shell(active, content) {
 const storageBanner = () =>
   state.storage
     ? ''
-    : `<div class="banner">${icon('alert')}<div><b>Saving isn’t switched on yet</b>You can look around and edit, but changes can’t be saved until storage is connected. One-time setup in Vercel:<ol><li>Open the project, go to <b>Storage</b> and click <b>Create Database</b>, then pick <b>Blob</b>.</li><li>Connect it to this project, then <b>Redeploy</b>.</li></ol></div></div>`;
+    : state.storageError
+      ? `<div class="banner">${icon('alert')}<div><b>Can’t reach the database</b>Changes can’t be saved until this is fixed. Check the MySQL settings in Vercel (Settings → Environment Variables), then redeploy. The database said: <code>${esc(state.storageError)}</code></div></div>`
+      : `<div class="banner">${icon('alert')}<div><b>Saving isn’t switched on yet</b>You can look around and edit, but changes can’t be saved until the database is connected. One-time setup in Vercel, under <b>Settings → Environment Variables</b>:<ol><li>Add <code>MYSQL_HOST</code>, <code>MYSQL_PORT</code>, <code>MYSQL_USER</code>, <code>MYSQL_PASSWORD</code> and <code>MYSQL_DATABASE</code>.</li><li>Add <code>MYSQL_SSL_CA</code> and paste the whole SSL certificate as its value.</li><li>Go to <b>Deployments</b> and <b>Redeploy</b>.</li></ol></div></div>`;
 
 function topBar(title, sub, actions, back = '') {
   return `<div class="top">${back}<div class="grow"><h1>${title}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}</div><div class="actions"><span class="dirty"><i></i>Unsaved changes</span>${actions}<button class="btn primary" data-save disabled>Save changes</button></div></div>`;

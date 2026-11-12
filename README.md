@@ -48,8 +48,9 @@ PDF uploads). Saving puts the changes on the site straight away, with no rebuild
 
 How it works:
 
-- Saves and uploads go to Vercel Blob (`lib/site/store.ts`). Every save also keeps a copy under
-  `site/history/` in the Blob store, so an older version can be restored.
+- Saves and uploads go to the MySQL database (`lib/site/store.ts`). It creates its tables on first use:
+  `site_content` (what the site shows), `site_content_history` (every save, so an older version can be
+  restored) and `site_files` (uploaded images and PDFs, served from `/api/files/<id>/<name>`).
 - `/work`, `/case-study-<slug>` and `/work/<slug>` are rendered on request from the saved content by
   `app/[slug]/route.ts` and `app/work/[slug]/route.ts`, using `lib/site/render.mjs` and the layouts in
   `templates/`.
@@ -59,9 +60,14 @@ How it works:
 
 ### One-time setup
 
-1. In the Vercel project, open **Storage**, click **Create Database**, pick **Blob** and connect it to this
-   project. Vercel adds `BLOB_READ_WRITE_TOKEN` on its own.
-2. Redeploy.
+In the Vercel project, open **Settings → Environment Variables** and add:
+
+- `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`
+- `MYSQL_SSL_CA`: the CA certificate from your database host, pasted in full
+  (from `-----BEGIN CERTIFICATE-----` to `-----END CERTIFICATE-----`)
+
+Then redeploy. If the database can't be reached, `/admin` shows the database's error message and the
+site keeps showing the starting content.
 
 The login is kept in `lib/site/auth.ts` as hashes. To change it, set `ADMIN_USERNAME` and
 `ADMIN_PASSWORD` in Vercel's environment variables and redeploy. Uploads are limited to 4.5 MB per file.
