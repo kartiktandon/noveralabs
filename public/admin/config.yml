@@ -1,7 +1,7 @@
 # Content editor for the Novera Labs site (Decap CMS).
-# Open https://<your-site>/admin, sign in with GitHub, and edit case studies and the "More we've built" rows.
+# Open https://<your-site>/admin, sign in with the editor username and password, and edit case studies and the "More we've built" rows.
 # Every save commits to the repo; Vercel then runs scripts/build-content.mjs and the site updates in a minute or two.
-# GitHub sign-in goes through app/api/auth and app/api/callback (needs GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET on Vercel).
+# Sign-in is a username and password checked by app/api/auth (ADMIN_USERNAME, ADMIN_PASSWORD and GITHUB_TOKEN on Vercel).
 backend:
   name: github
   repo: kartiktandon/noveralabs
