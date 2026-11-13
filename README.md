@@ -57,6 +57,16 @@ How it works:
   so its "Selected work" list follows the case studies (each one has a "Home page" switch in /admin).
 - Until the first save, the pages show the starting content in `content/*.json`, packed into
   `lib/site/defaults.json` by `scripts/build-content.mjs` (runs before every build, or `npm run content`).
+- The blog lives at `/blog` (`app/blog/*`, renderer `lib/site/blog.mjs`, layout `templates/blog.html`):
+  the blog home, a page per category (`/blog/category/<name>`) and tag (`/blog/tag/<name>`), and a page
+  per post with "On this page", FAQs, related posts and recent work. Posts are written in /admin under
+  **Blog posts** (Markdown, with a toolbar; pasting from Google Docs keeps the formatting) and saved
+  with the rest of the content. Drafts and posts dated in the future stay hidden.
+- For Google: each post has article, breadcrumb and FAQ markup, link previews, `/sitemap.xml`,
+  `/robots.txt` and an RSS feed at `/blog/rss.xml`. Set `SITE_URL` (e.g. `https://www.noveralabs.com`)
+  in Vercel so these use the final domain; without it they use the address the page was opened on.
+- The quote forms on every page send enquiries to `/api/leads`; they're stored in the `site_leads`
+  table and listed in /admin under **Leads**.
 - The admin panel lives in `public/admin/` and talks to `app/api/admin/*`.
 
 ### One-time setup

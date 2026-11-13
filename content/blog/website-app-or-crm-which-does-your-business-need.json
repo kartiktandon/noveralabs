@@ -1,0 +1,39 @@
+{
+  "slug": "website-app-or-crm-which-does-your-business-need",
+  "title": "Website, app or CRM: which one does your business actually need?",
+  "excerpt": "A plain guide to the four things businesses ask us for, what each one is good at, and how to choose the right one in ten minutes.",
+  "category": "Guides",
+  "tags": [
+    "Website",
+    "Mobile app",
+    "CRM",
+    "Small business"
+  ],
+  "author": "Novera Labs",
+  "date": "2026-11-13",
+  "status": "draft",
+  "featured": true,
+  "cover_image": "",
+  "cover_alt": "",
+  "body": "Most businesses that come to us don't start with \"we need a CRM\" or \"we need an app\". They start with a problem: enquiries are getting lost, staff are copying the same data into three places, or customers keep calling to ask where their order is.\n\nThe right software depends on that problem, not on what's popular. This guide walks through the four things businesses usually ask for, what each one is good at, and how to tell which one you need.\n\n## Start with the problem, not the product\n\nBefore picking anything, write down three things:\n\n1. **Who is struggling today?** Your customers, your staff, or you.\n2. **Where does the work happen now?** WhatsApp, Excel, paper registers, phone calls.\n3. **What does it cost you when it goes wrong?** A lost lead, a late delivery, a payment you forgot to follow up.\n\nYour answers usually point straight at one of the options below.\n\n## A website: when people need to find you and trust you\n\nA website is your shopfront. It is the right first step when new customers search for you, compare you with others, and need a reason to call.\n\nA good business website does three jobs:\n\n- Shows what you do, clearly, in the words your customers use\n- Proves you're real: your work, your address, how to reach you\n- Turns a visitor into an enquiry with a short form or a WhatsApp button\n\nIf most of your problems are about getting **more enquiries**, start here.\n\n## A web app: when work needs a system, not a spreadsheet\n\nA web app runs in the browser and does a job for your team or your customers: bookings, quotes, an order portal, a POS, a dashboard.\n\nYou need one when the same task is done by hand every day, by more than one person, and mistakes are expensive. Typical signs:\n\n- Two people keep editing the same Excel file\n- Bookings or orders come in on WhatsApp and get missed\n- You can't see today's numbers without asking someone\n\n## A mobile app: when customers come back again and again\n\nA mobile app is worth it when your customers use you often: ordering food, booking a service every month, tracking a delivery, or paying a bill.\n\nIf people visit you once a year, a fast mobile website usually does the job for far less. If they come back every week, an app with notifications and saved details keeps them coming back.\n\n## A CRM: when enquiries slip through the cracks\n\nA CRM keeps every lead and customer in one place, with the next follow-up date next to their name. It is the right choice when:\n\n- Leads come from many places: calls, WhatsApp, your website, ads\n- Follow-ups depend on someone remembering\n- You don't know which enquiries turned into sales, or why the rest didn't\n\nA simple CRM built around how your team already works is used far more than a big one nobody opens.\n\n## Side by side\n\n| What you need | Best fit | You'll notice the difference in |\n|---|---|---|\n| More enquiries from new customers | Website | Calls and form fills |\n| Less manual work for your team | Web app | Hours saved every week |\n| Customers ordering or booking often | Mobile app | Repeat orders |\n| No lead or follow-up forgotten | CRM | Leads that turn into sales |\n\n## Many businesses need two of these\n\nIt's common to start with a website and add a CRM once enquiries grow, or to build a web app for staff and a mobile app for customers on the same system. Plan the first one so the second can plug into it later, and you won't pay to rebuild.\n\n## How to choose in ten minutes\n\nAsk: *if this one thing worked perfectly tomorrow, what would change?* If the answer is \"more people would find us\", build the website. If it's \"my team would stop wasting hours\", build the web app or CRM. If it's \"customers would order again without calling\", build the app.\n\nNot sure? [Tell us what's slowing you down](/contact) and we'll suggest the smallest thing that fixes it, with one fixed price.",
+  "faqs": [
+    {
+      "q": "Do I need a website if I already get customers on WhatsApp?",
+      "a": "Usually yes. People still search for you before they message you. A simple website with your work and a WhatsApp button makes those messages more likely."
+    },
+    {
+      "q": "Should I build a mobile app or a mobile website?",
+      "a": "If customers use you every week or month, an app is worth it. If they visit a few times a year, a fast mobile website does the job for much less."
+    },
+    {
+      "q": "Can a CRM be built around how my team already works?",
+      "a": "Yes. A custom CRM follows your own steps and labels, which is why teams actually use it."
+    },
+    {
+      "q": "Can I start small and add more later?",
+      "a": "Yes. Most businesses start with one piece and add the next once it pays for itself. We plan the first build so the next one plugs in."
+    }
+  ],
+  "seo_title": "Website, app or CRM: which does your business need? | Novera Labs",
+  "seo_description": "Website, web app, mobile app or CRM? A plain guide for Indian businesses on what each one does and how to pick the right one in ten minutes."
+}

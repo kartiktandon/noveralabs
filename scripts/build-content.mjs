@@ -1,5 +1,5 @@
 // Packs the starting content and page templates for the home, Work and case study pages:
-//   content/case-studies/*.json + content/more-work/*.json + templates/*.html -> lib/site/defaults.json
+//   content/case-studies/*.json + content/more-work/*.json + content/blog/*.json + templates/*.html -> lib/site/defaults.json
 //   lib/site/render.mjs -> public/admin/render.mjs (the admin panel's live preview uses the same renderer)
 // The live pages show what is saved from /admin (MySQL) and fall back to these defaults
 // until the first save. Runs before every build; run it on its own with: npm run content
@@ -20,14 +20,17 @@ const readJson = (dir) =>
 const content = normalize({
   cases: readJson(path.join(ROOT, 'content', 'case-studies')),
   more: readJson(path.join(ROOT, 'content', 'more-work')),
+  posts: readJson(path.join(ROOT, 'content', 'blog')),
 });
 
 const templates = {
   case: readFileSync(path.join(ROOT, 'templates', 'case-study.html'), 'utf8'),
   work: readFileSync(path.join(ROOT, 'templates', 'work.html'), 'utf8'),
   home: readFileSync(path.join(ROOT, 'templates', 'home.html'), 'utf8'),
+  blog: readFileSync(path.join(ROOT, 'templates', 'blog.html'), 'utf8'),
 };
 
 writeFileSync(path.join(ROOT, 'lib', 'site', 'defaults.json'), JSON.stringify({ ...content, templates }) + '\n');
 copyFileSync(path.join(ROOT, 'lib', 'site', 'render.mjs'), path.join(ROOT, 'public', 'admin', 'render.mjs'));
-console.log(`content: ${content.cases.length} case studies, ${content.more.length} more-work rows`);
+copyFileSync(path.join(ROOT, 'lib', 'site', 'blog.mjs'), path.join(ROOT, 'public', 'admin', 'blog.mjs'));
+console.log(`content: ${content.cases.length} case studies, ${content.more.length} more-work rows, ${content.posts.length} blog posts`);

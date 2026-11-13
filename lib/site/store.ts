@@ -6,7 +6,7 @@
 import defaults from './defaults.json';
 import { normalize } from './render.mjs';
 
-export type Content = { cases: Record<string, any>[]; more: Record<string, any>[] };
+export type Content = { cases: Record<string, any>[]; more: Record<string, any>[]; posts?: Record<string, any>[] };
 type Pool = import('mysql2/promise').Pool;
 
 export const templates = defaults.templates;
@@ -43,6 +43,9 @@ async function db() {
     await p.query(`CREATE TABLE IF NOT EXISTS site_content_history (
       id INT AUTO_INCREMENT PRIMARY KEY, data LONGTEXT NOT NULL,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
+    await p.query(`CREATE TABLE IF NOT EXISTS site_leads (
+      id INT AUTO_INCREMENT PRIMARY KEY, data TEXT NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'new',
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
     await p.query(`CREATE TABLE IF NOT EXISTS site_files (
       id VARCHAR(32) PRIMARY KEY, name VARCHAR(200) NOT NULL, type VARCHAR(100) NOT NULL,
       size INT NOT NULL, data LONGBLOB NOT NULL,
@@ -55,15 +58,18 @@ async function db() {
   return p;
 }
 
-const fallback = (): Content => normalize({ cases: defaults.cases, more: defaults.more });
+const fallback = (): Content & { posts: Record<string, any>[] } =>
+  ({ ...normalize({ cases: defaults.cases, more: defaults.more }), posts: defaults.posts });
 
 // What the site shows: the last save from /admin, or the starting content
-export async function getContent(): Promise<Content & { saved: boolean }> {
+export async function getContent(): Promise<Content & { posts: Record<string, any>[]; saved: boolean }> {
   if (!storageReady()) return { ...fallback(), saved: false };
   const [rows] = await (await db()).query("SELECT data FROM site_content WHERE id = 'main'");
   const row = (rows as { data: string }[])[0];
   if (!row) return { ...fallback(), saved: false };
-  return { ...normalize(JSON.parse(row.data)), saved: true };
+  const saved = normalize(JSON.parse(row.data));
+  // Content saved before the blog existed starts with the default posts
+  return { ...saved, posts: saved.posts ?? defaults.posts, saved: true };
 }
 
 export async function saveContent(content: Content) {
@@ -115,4 +121,29 @@ export async function checkStorage() {
   } catch (e) {
     return (e as Error).message || 'Could not connect to the database.';
   }
+}
+
+// Enquiries from the quote forms on the site, shown under Leads in /admin
+export type Lead = { id: number; status: string; created_at: string } & Record<string, any>;
+
+export async function saveLead(data: Record<string, string>) {
+  await (await db()).query('INSERT INTO site_leads (data) VALUES (?)', [JSON.stringify(data)]);
+}
+
+export async function listLeads(): Promise<Lead[]> {
+  const [rows] = await (await db()).query('SELECT id, data, status, created_at FROM site_leads ORDER BY id DESC LIMIT 1000');
+  return (rows as { id: number; data: string; status: string; created_at: Date }[]).map((r) => ({
+    ...JSON.parse(r.data),
+    id: r.id,
+    status: r.status,
+    created_at: new Date(r.created_at).toISOString(),
+  }));
+}
+
+export async function updateLead(id: number, status: string) {
+  await (await db()).query('UPDATE site_leads SET status = ? WHERE id = ?', [status, id]);
+}
+
+export async function deleteLead(id: number) {
+  await (await db()).query('DELETE FROM site_leads WHERE id = ?', [id]);
 }

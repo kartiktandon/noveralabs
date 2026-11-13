@@ -1,6 +1,8 @@
-// Novera Labs admin panel: sign in, then edit case studies and "More we've built".
-// Everything is saved in one go to /api/admin/content; the site shows it straight away.
+// Novera Labs admin panel: sign in, then edit case studies, "More we've built" and blog posts,
+// and read the enquiries sent from the site's quote forms.
+// Content is saved in one go to /api/admin/content; the site shows it straight away.
 import { renderCasePage, workGrid, slugify, initials } from '/admin/render.mjs';
+import { renderPost as renderPostPage, postCard, readMinutes, isLive, fmtDate } from '/admin/blog.mjs';
 
 const app = document.getElementById('app');
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -27,6 +29,17 @@ const I = {
   eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
   eyeOff: '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/>',
   menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
+  pen: '<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  inbox: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  bold: '<path d="M6 4h8a4 4 0 0 1 0 8H6zM6 12h9a4 4 0 0 1 0 8H6z"/>',
+  italic: '<path d="M19 4h-9M14 20H5M15 4L9 20"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+  ul: '<path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+  ol: '<path d="M10 6h11M10 12h11M10 18h11M4 6h1v4M4 10h2M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/>',
+  quote: '<path d="M3 21c3 0 7-1 7-8V5c0-1.25-.76-2-2-2H4c-1.25 0-2 .75-2 1.97V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .01-1 1.03V20c0 1 0 1 1 1zM15 21c3 0 7-1 7-8V5c0-1.25-.76-2-2-2h-4c-1.25 0-2 .75-2 1.97V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>',
+  table: '<path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18"/>',
+  image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
+  phone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
   copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
 };
 const icon = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[name]}</svg>`;
@@ -36,6 +49,10 @@ const FILTERS = ['Website', 'Web app', 'Mobile app', 'CRM'];
 const state = {
   cases: [],
   more: [],
+  posts: [],
+  leads: null,
+  postFilter: 'All',
+  postQuery: '',
   templates: null,
   storage: false,
   storageError: '',
@@ -60,7 +77,7 @@ async function api(path, opts = {}) {
   return data;
 }
 
-const snapshot = () => JSON.stringify({ cases: state.cases, more: state.more });
+const snapshot = () => JSON.stringify({ cases: state.cases, more: state.more, posts: state.posts });
 const isDirty = () => snapshot() !== state.saved;
 
 function updateDirty() {
@@ -161,11 +178,13 @@ async function load() {
   const data = await api('/api/admin/content');
   state.cases = data.cases;
   state.more = data.more;
+  state.posts = data.posts || [];
   state.templates = data.templates;
   state.storage = data.storage;
   state.storageError = data.storageError || '';
   state.saved = snapshot();
   route();
+  if (state.storage && state.leads === null) loadLeads().catch(() => {});
 }
 
 async function save() {
@@ -175,6 +194,11 @@ async function save() {
   const slugs = state.cases.map((c) => c.slug);
   const dupe = slugs.find((s, i) => slugs.indexOf(s) !== i);
   if (dupe) return toast(`Two case studies use the page address “${esc(dupe)}”. Change one of them.`, 'err');
+  const badPost = state.posts.find((p) => !String(p.title || '').trim() || !p.slug);
+  if (badPost) return toast('Every blog post needs a title and a page address.', 'err');
+  const postSlugs = state.posts.map((p) => p.slug);
+  const dupePost = postSlugs.find((s, i) => postSlugs.indexOf(s) !== i);
+  if (dupePost) return toast(`Two blog posts use the page address “${esc(dupePost)}”. Change one of them.`, 'err');
   state.cases.forEach((c, i) => (c.order = i + 1));
   state.more.forEach((r, i) => (r.order = i + 1));
   state.saving = true;
@@ -184,12 +208,13 @@ async function save() {
     const data = await api('/api/admin/content', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cases: state.cases, more: state.more }),
+      body: JSON.stringify({ cases: state.cases, more: state.more, posts: state.posts }),
     });
     // Keep the same objects (the open editor points at them), only take the server's cleanup
     state.cases.forEach((c, i) => Object.assign(c, data.cases[i]));
     state.saved = snapshot();
-    toast('Saved. It’s live on the site now. <a href="/work" target="_blank" rel="noopener">View Work page</a>');
+    const onBlog = /^#\/(blog|post)/.test(location.hash);
+    toast(`Saved. It’s live on the site now. ${onBlog ? '<a href="/blog" target="_blank" rel="noopener">View blog</a>' : '<a href="/work" target="_blank" rel="noopener">View Work page</a>'}`);
   } catch (x) {
     if (x.message !== 'signed-out') toast(esc(x.message), 'err', 8000);
   } finally {
@@ -233,6 +258,9 @@ function shell(active, content) {
       <p class="tag">Content</p>
       <a class="nav" href="#/cases" ${active === 'cases' ? 'aria-current="page"' : ''}>${icon('grid')}Case studies<span class="count">${state.cases.length}</span></a>
       <a class="nav" href="#/more" ${active === 'more' ? 'aria-current="page"' : ''}>${icon('list')}More we’ve built<span class="count">${state.more.length}</span></a>
+      <a class="nav" href="#/blog" ${active === 'blog' ? 'aria-current="page"' : ''}>${icon('pen')}Blog posts<span class="count">${state.posts.length}</span></a>
+      <p class="tag">Enquiries</p>
+      <a class="nav" href="#/leads" ${active === 'leads' ? 'aria-current="page"' : ''}>${icon('inbox')}Leads${state.leads?.some((l) => l.status === 'new') ? `<span class="count new">${state.leads.filter((l) => l.status === 'new').length}</span>` : ''}</a>
       <div class="bottom">
         <div class="status${state.storage ? '' : ' off'}"><b><i></i>${state.storage ? 'Saving is on' : 'Saving is off'}</b>${state.storage ? 'Saves go live on the site straight away.' : (state.storageError ? 'Can’t reach the database.' : 'Add the database settings in Vercel to save.')}</div>
         <a class="nav" href="/work" target="_blank" rel="noopener">${icon('ext')}View site</a>
@@ -277,6 +305,13 @@ function route() {
   const [, view, id] = location.hash.split('/');
   window.scrollTo(0, 0);
   if (view === 'more') return renderMore();
+  if (view === 'blog') return renderBlog();
+  if (view === 'leads') return renderLeads();
+  if (view === 'post' && id !== undefined) {
+    const p = state.posts.find((x) => x.slug === decodeURIComponent(id));
+    if (p) return renderPostEditor(p);
+    return renderBlog();
+  }
   if (view === 'case' && id !== undefined) {
     const c = state.cases.find((x) => x.slug === decodeURIComponent(id)) || state.cases[Number(id)];
     if (c) return renderCase(c);
@@ -669,6 +704,39 @@ function bindCase(c, isNew) {
     }
   });
 
+  bindImageDrops(c, rerender);
+
+  $('[data-del]').addEventListener('click', async () => {
+    const ok = await confirmBox({
+      title: `Delete ${esc(c.name || 'this case study')}?`,
+      text: 'Its card and page come off the site when you save. You can’t undo this from here.',
+    });
+    if (!ok) return;
+    state.cases.splice(state.cases.indexOf(c), 1);
+    location.hash = '#/cases';
+    updateDirty();
+    toast('Deleted. Click Save changes to take it off the site.');
+  });
+
+  $$('[data-mode]').forEach((b) =>
+    b.addEventListener('click', () => {
+      state.previewMode = b.dataset.mode;
+      $$('[data-mode]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+      $('[aria-label="Device"]').hidden = state.previewMode === 'card';
+      renderPreview(c, true);
+    }),
+  );
+  $$('[data-device]').forEach((b) =>
+    b.addEventListener('click', () => {
+      state.device = b.dataset.device;
+      $$('[data-device]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+      renderPreview(c, true);
+    }),
+  );
+}
+
+// Image drop zones ([data-image=path]) for case studies and blog posts
+function bindImageDrops(c, rerender) {
   $$('[data-image]').forEach((drop) => {
     const path = drop.dataset.image;
     const file = $('input[type=file]', drop);
@@ -702,34 +770,6 @@ function bindCase(c, isNew) {
       go(e.dataTransfer.files[0]);
     });
   });
-
-  $('[data-del]').addEventListener('click', async () => {
-    const ok = await confirmBox({
-      title: `Delete ${esc(c.name || 'this case study')}?`,
-      text: 'Its card and page come off the site when you save. You can’t undo this from here.',
-    });
-    if (!ok) return;
-    state.cases.splice(state.cases.indexOf(c), 1);
-    location.hash = '#/cases';
-    updateDirty();
-    toast('Deleted. Click Save changes to take it off the site.');
-  });
-
-  $$('[data-mode]').forEach((b) =>
-    b.addEventListener('click', () => {
-      state.previewMode = b.dataset.mode;
-      $$('[data-mode]').forEach((x) => x.setAttribute('aria-pressed', x === b));
-      $('[aria-label="Device"]').hidden = state.previewMode === 'card';
-      renderPreview(c, true);
-    }),
-  );
-  $$('[data-device]').forEach((b) =>
-    b.addEventListener('click', () => {
-      state.device = b.dataset.device;
-      $$('[data-device]').forEach((x) => x.setAttribute('aria-pressed', x === b));
-      renderPreview(c, true);
-    }),
-  );
 }
 
 // ---------- Live preview ----------
@@ -880,6 +920,649 @@ function renderMore() {
     move(state.more, from, to, rerender);
     updateDirty();
   });
+}
+
+// ---------- Blog posts ----------
+const today = () => new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
+const postState = (p) => (p.status !== 'published' ? 'draft' : isLive(p, today()) ? 'live' : 'scheduled');
+const STATE_LABEL = { live: 'Published', draft: 'Draft', scheduled: 'Scheduled' };
+
+function renderBlog() {
+  const q = state.postQuery.toLowerCase();
+  const sorted = [...state.posts].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  const shown = sorted.filter(
+    (p) =>
+      (state.postFilter === 'All' || STATE_LABEL[postState(p)] === state.postFilter) &&
+      (!q || [p.title, p.category, p.excerpt, (p.tags || []).join(' ')].join(' ').toLowerCase().includes(q)),
+  );
+  app.className = '';
+  app.innerHTML = shell(
+    'blog',
+    `${topBar('Blog posts', 'Articles on /blog. Drafts stay hidden until you publish them.', `<a class="btn" href="/blog" target="_blank" rel="noopener">${icon('ext')}<span>View blog</span></a><button class="btn dark" data-new-post>${icon('plus')}New post</button>`)}
+    <div class="page">
+      ${storageBanner()}
+      <div class="toolbar">
+        <div class="search">${icon('search')}<input class="input" type="search" placeholder="Search posts" value="${esc(state.postQuery)}" data-pq aria-label="Search posts"></div>
+        <div class="chips">${['All', 'Published', 'Draft', 'Scheduled'].map((f) => `<button class="chip" data-pf="${f}" aria-pressed="${state.postFilter === f}">${f}</button>`).join('')}</div>
+      </div>
+      ${
+        shown.length
+          ? `<div class="posts">${shown
+              .map((p) => {
+                const st = postState(p);
+                const img = imgUrl(p.cover_image);
+                return `<article class="post-row" data-slug="${esc(p.slug)}" tabindex="0" aria-label="Edit ${esc(p.title)}">
+                <div class="pthumb" style="${img ? `background-image:url('${esc(img)}')` : ''}">${img ? '' : icon('image')}</div>
+                <div class="pbody"><b>${esc(p.title || 'Untitled post')}</b><p>${esc(p.excerpt || 'No summary yet')}</p>
+                  <small>${esc(p.category || 'No category')} · ${readMinutes(p.body)} min read · ${esc(fmtDate(p.date) || 'No date')}${p.featured ? ' · Featured' : ''}</small></div>
+                <span class="pstate ${st}">${STATE_LABEL[st]}</span>
+              </article>`;
+              })
+              .join('')}</div>`
+          : state.posts.length
+            ? `<div class="empty-state">No posts match. <button class="btn sm" data-pclear>Clear search</button></div>`
+            : `<div class="empty-state big"><b>Write your first post</b>Posts help people find you on Google. Start with a question your customers often ask you.<button class="btn primary" data-new-post>${icon('plus')}New post</button></div>`
+      }
+    </div>`,
+  );
+  bindShell();
+  $$('[data-new-post]').forEach((b) => b.addEventListener('click', newPost));
+  $('[data-pq]').addEventListener('input', (e) => {
+    state.postQuery = e.target.value;
+    const pos = e.target.selectionStart;
+    renderBlog();
+    const q2 = $('[data-pq]');
+    q2.focus();
+    q2.setSelectionRange(pos, pos);
+  });
+  $$('[data-pf]').forEach((b) => b.addEventListener('click', () => ((state.postFilter = b.dataset.pf), renderBlog())));
+  $('[data-pclear]')?.addEventListener('click', () => ((state.postQuery = ''), (state.postFilter = 'All'), renderBlog()));
+  $$('.post-row').forEach((row) => {
+    const open = () => (location.hash = `#/post/${encodeURIComponent(row.dataset.slug)}`);
+    row.addEventListener('click', open);
+    row.addEventListener('keydown', (e) => e.key === 'Enter' && open());
+  });
+}
+
+function newPost() {
+  const p = {
+    slug: `new-post-${Date.now().toString(36).slice(-4)}`,
+    title: '',
+    excerpt: '',
+    category: '',
+    tags: [],
+    author: 'Novera Labs',
+    date: today(),
+    status: 'draft',
+    featured: false,
+    cover_image: '',
+    cover_alt: '',
+    body: '',
+    faqs: [],
+    seo_title: '',
+    seo_description: '',
+  };
+  state.posts.unshift(p);
+  location.hash = `#/post/${p.slug}`;
+}
+
+const TOOLS = [
+  ['h2', 'H2', 'Section heading'],
+  ['h3', 'H3', 'Sub-heading'],
+  ['bold', icon('bold'), 'Bold'],
+  ['italic', icon('italic'), 'Italic'],
+  ['link', icon('link'), 'Link'],
+  ['ul', icon('ul'), 'Bulleted list'],
+  ['ol', icon('ol'), 'Numbered list'],
+  ['quote', icon('quote'), 'Highlight box'],
+  ['table', icon('table'), 'Table'],
+  ['image', icon('image'), 'Image'],
+];
+
+function renderPostEditor(p) {
+  const isNew = p.slug.startsWith('new-post-') && !p.title;
+  const st = postState(p);
+  const cats = [...new Set(state.posts.map((x) => x.category).filter(Boolean))].sort();
+  const words = String(p.body || '').split(/\s+/).filter(Boolean).length;
+  const seoTitle = p.seo_title || `${p.title || 'Post title'} | Novera Labs`;
+  app.className = '';
+  app.innerHTML = shell(
+    'blog',
+    `${topBar(
+      esc(p.title || 'New post'),
+      `Page: /blog/${esc(p.slug)} · <span data-st class="pstate ${st}">${STATE_LABEL[st]}</span>`,
+      `<a class="btn" href="/blog/${esc(p.slug)}" target="_blank" rel="noopener" title="Open the live page" ${st === 'live' ? '' : 'hidden'} data-live>${icon('ext')}<span>Live page</span></a><button class="btn danger icon" data-del title="Delete post" aria-label="Delete post">${icon('trash')}</button>`,
+      `<a class="btn ghost icon" href="#/blog" aria-label="Back to blog posts">${icon('back')}</a>`,
+    )}
+    <div class="page">
+      ${storageBanner()}
+      <div class="editor">
+        <form class="form" id="post-form" autocomplete="off" onsubmit="return false">
+          <nav class="sections-nav"><a href="#s-pub">Publish</a><a href="#s-basics">Basics</a><a href="#s-article">Article</a><a href="#s-faq">FAQs</a><a href="#s-google">Google</a></nav>
+
+          <section class="sec" id="s-pub">
+            <div class="sec-head"><div><h3>Publish</h3><p>Drafts are only visible here. A published post with a future date goes live on that day.</p></div>
+              <label class="switch"><input type="checkbox" data-path="status" data-status ${p.status === 'published' ? 'checked' : ''}>Published</label></div>
+            <div class="grid3">
+              <div class="field"><label for="f-date">Publish date</label><input class="input" type="date" id="f-date" data-path="date" value="${esc(p.date)}"></div>
+              ${input(p, 'author', 'Author', { placeholder: 'Novera Labs' })}
+              <div class="field"><span class="label">Featured</span><label class="switch inline"><input type="checkbox" data-path="featured" data-bool ${p.featured ? 'checked' : ''}>Show at the top of /blog</label></div>
+            </div>
+          </section>
+
+          <section class="sec" id="s-basics">
+            <div class="sec-head"><div><h3>Basics</h3><p>The title, summary and cover show on the blog page and when the link is shared.</p></div></div>
+            <div class="stack">
+              ${input(p, 'title', 'Title', { placeholder: 'e.g. How much does a CRM cost in India?', hint: 'Write the question your customer would type into Google.' })}
+              <div class="field"><label for="f-slug">Page address</label><div class="prefix"><span>/blog/</span><input class="input" id="f-slug" data-path="slug" data-slug value="${isNew ? '' : esc(p.slug)}" placeholder="how-much-does-a-crm-cost"></div><p class="hint">Fills in from the title. Don’t change it after publishing, or old links break.</p></div>
+              ${input(p, 'excerpt', 'Summary', { area: true, rows: 2, placeholder: 'One or two lines on what the reader will learn', hint: 'Shown under the title and on the blog cards.' })}
+              <div class="grid2">
+                <div class="field"><label for="f-category">Category</label><input class="input" id="f-category" data-path="category" list="cats" value="${esc(p.category)}" placeholder="e.g. Guides"><datalist id="cats">${cats.map((c) => `<option value="${esc(c)}">`).join('')}</datalist><p class="hint">Each category gets its own page on the blog.</p></div>
+                <div class="field"><span class="label">Tags <small>Enter to add</small></span>
+                  <div class="tags" data-tags>${(p.tags || []).map((t, i) => `<span>${esc(t)}<button type="button" data-untag="${i}" aria-label="Remove ${esc(t)}">${icon('x')}</button></span>`).join('')}<input placeholder="e.g. CRM" aria-label="Add a tag"></div>
+                </div>
+              </div>
+              ${imageField(p, 'cover_image', 'Cover image', 'Wide image, about 1600 × 900 px')}
+              ${input(p, 'cover_alt', 'Cover image description', { small: 'for Google and screen readers', placeholder: 'What the image shows' })}
+            </div>
+          </section>
+
+          <section class="sec" id="s-article">
+            <div class="sec-head"><div><h3>Article</h3><p>Paste from Google Docs, Word or ChatGPT and the formatting comes with it. Each H2 shows in “On this page”.</p></div><span class="wc" data-wc>${words} words · ${readMinutes(p.body)} min read</span></div>
+            <div class="md">
+              <div class="md-bar" role="toolbar" aria-label="Formatting">${TOOLS.map(([k, label, title]) => `<button type="button" data-md="${k}" title="${title}" aria-label="${title}">${label}</button>`).join('')}<input type="file" accept="image/*" hidden data-md-file><span class="busy-md" hidden><span class="spin"></span>Uploading</span></div>
+              <textarea class="textarea md-text" id="f-body" data-path="body" rows="24" placeholder="Start with a short intro. Then use H2 headings for each main point.">${esc(p.body)}</textarea>
+              <p class="hint md-help"><b>## Heading</b> · <b>**bold**</b> · <b>*italic*</b> · <b>[link text](https://…)</b> · <b>- list item</b> · <b>&gt; highlight box</b></p>
+            </div>
+          </section>
+
+          <section class="sec" id="s-faq">
+            <div class="sec-head"><div><h3>FAQs</h3><p>Shown under the article. Google can show these as questions in search results.</p></div></div>
+            <div class="stack">
+              <div class="repeat">${(p.faqs || [])
+                .map(
+                  (f, i) => `<div class="item"><span class="n">${i + 1}</span><div class="fields"><input class="input" data-path="faqs.${i}.q" value="${esc(f.q)}" placeholder="Question" aria-label="Question ${i + 1}"><textarea class="textarea" data-path="faqs.${i}.a" rows="2" placeholder="Answer" aria-label="Answer ${i + 1}">${esc(f.a)}</textarea></div><div class="tools">${itemTools('faqs', i, p.faqs.length)}</div></div>`,
+                )
+                .join('')}</div>
+              <button type="button" class="btn sm add-row" data-add="faqs">${icon('plus')}Add question</button>
+            </div>
+          </section>
+
+          <section class="sec" id="s-google">
+            <div class="sec-head"><div><h3>Google</h3><p>How the post looks in search results. Leave empty to use the title and summary.</p></div></div>
+            <div class="stack">
+              <div class="serp"><span class="u">noveralabs · blog › <span data-serp-slug>${esc(p.slug)}</span></span><span class="t" data-serp-t>${esc(seoTitle)}</span><span class="d" data-serp-d>${esc(p.seo_description || p.excerpt || 'Your summary shows here.')}</span></div>
+              ${input(p, 'seo_title', 'Search title', { placeholder: seoTitle, small: `<span data-count-t>${(p.seo_title || '').length}</span>/60` })}
+              ${input(p, 'seo_description', 'Search description', { area: true, rows: 2, placeholder: p.excerpt || 'About 150 characters', small: `<span data-count>${(p.seo_description || '').length}</span>/160` })}
+            </div>
+          </section>
+        </form>
+
+        <aside class="preview">
+          <div class="preview-bar">
+            <div class="seg" role="group" aria-label="Preview"><button type="button" data-mode="page" aria-pressed="${state.previewMode === 'page'}">Page</button><button type="button" data-mode="card" aria-pressed="${state.previewMode === 'card'}">Card</button></div>
+            <div class="seg" role="group" aria-label="Device" ${state.previewMode === 'card' ? 'hidden' : ''}><button type="button" data-device="desktop" aria-pressed="${state.device === 'desktop'}">Desktop</button><button type="button" data-device="mobile" aria-pressed="${state.device === 'mobile'}">Phone</button></div>
+          </div>
+          <div data-preview></div>
+        </aside>
+      </div>
+    </div>`,
+  );
+  bindShell();
+  bindPost(p, isNew);
+  renderPostPreview(p, true);
+}
+
+function bindPost(p, isNew) {
+  const form = $('#post-form');
+  if (isNew) slugTouched.delete(p);
+  else slugTouched.add(p);
+  const rerender = () => {
+    const y = scrollY;
+    renderPostEditor(p);
+    window.scrollTo(0, y);
+  };
+  const refreshState = () => {
+    const st = postState(p);
+    const badge = $('[data-st]');
+    badge.className = `pstate ${st}`;
+    badge.textContent = STATE_LABEL[st];
+    $('[data-live]').hidden = st !== 'live';
+  };
+  form.addEventListener('input', (e) => {
+    const el = e.target;
+    const path = el.dataset.path;
+    if (!path) return;
+    let v = el.dataset.status !== undefined ? (el.checked ? 'published' : 'draft') : el.dataset.bool !== undefined ? el.checked : el.value;
+    if (el.dataset.slug !== undefined) {
+      v = slugify(v);
+      slugTouched.add(p);
+    }
+    set(p, path, v);
+    if (path === 'title') {
+      if (!slugTouched.has(p)) {
+        p.slug = slugify(v) || p.slug;
+        $('#f-slug').value = p.slug;
+      }
+      $('.top h1').textContent = v || 'New post';
+    }
+    if (path === 'title' || path === 'slug') {
+      history.replaceState(null, '', `#/post/${encodeURIComponent(p.slug)}`);
+      $('.top .sub').firstChild.textContent = `Page: /blog/${p.slug} · `;
+      $('[data-serp-slug]').textContent = p.slug;
+      $('[data-live]').href = `/blog/${p.slug}`;
+    }
+    if (['title', 'seo_title'].includes(path)) $('[data-serp-t]').textContent = p.seo_title || `${p.title || 'Post title'} | Novera Labs`;
+    if (['excerpt', 'seo_description'].includes(path)) $('[data-serp-d]').textContent = p.seo_description || p.excerpt || 'Your summary shows here.';
+    if (path === 'seo_title') $('[data-count-t]').textContent = v.length;
+    if (path === 'seo_description') $('[data-count]').textContent = v.length;
+    if (path === 'body') $('[data-wc]').textContent = `${v.split(/\s+/).filter(Boolean).length} words · ${readMinutes(v)} min read`;
+    if (path === 'status' || path === 'date') refreshState();
+    if (path === 'featured' && v) state.posts.forEach((x) => x !== p && (x.featured = false));
+    updateDirty();
+    renderPostPreview(p);
+  });
+  $('#f-slug').addEventListener('blur', (e) => {
+    if (!e.target.value) e.target.value = p.slug;
+  });
+
+  form.addEventListener('click', (e) => {
+    const add = e.target.closest('[data-add]');
+    const rm = e.target.closest('[data-remove]');
+    const mv = e.target.closest('[data-move]');
+    const untag = e.target.closest('[data-untag]');
+    if (add) {
+      p.faqs = [...(p.faqs || []), { q: '', a: '' }];
+      updateDirty();
+      rerender();
+      $$('[data-path$=".q"]').pop()?.focus();
+    }
+    if (rm) {
+      const [list, i] = rm.dataset.remove.split('.');
+      p[list].splice(Number(i), 1);
+      updateDirty();
+      rerender();
+    }
+    if (mv) {
+      const [list, i, d] = mv.dataset.move.split('.');
+      const a = Number(i);
+      const b = a + Number(d);
+      [p[list][a], p[list][b]] = [p[list][b], p[list][a]];
+      updateDirty();
+      rerender();
+    }
+    if (untag) {
+      p.tags.splice(Number(untag.dataset.untag), 1);
+      updateDirty();
+      rerender();
+    }
+  });
+
+  const tagInput = $('[data-tags] input');
+  $('[data-tags]').addEventListener('click', () => tagInput.focus());
+  tagInput.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ',') && tagInput.value.trim()) {
+      e.preventDefault();
+      p.tags = [...(p.tags || []), tagInput.value.trim()];
+      updateDirty();
+      rerender();
+      $('[data-tags] input').focus();
+    }
+    if (e.key === 'Backspace' && !tagInput.value && p.tags?.length) {
+      p.tags.pop();
+      updateDirty();
+      rerender();
+      $('[data-tags] input').focus();
+    }
+  });
+
+  bindImageDrops(p, rerender);
+  bindMarkdown(p);
+
+  $('[data-del]').addEventListener('click', async () => {
+    const ok = await confirmBox({
+      title: `Delete “${esc(p.title || 'this post')}”?`,
+      text: 'It comes off the blog when you save. You can’t undo this from here.',
+    });
+    if (!ok) return;
+    state.posts.splice(state.posts.indexOf(p), 1);
+    location.hash = '#/blog';
+    updateDirty();
+    toast('Deleted. Click Save changes to take it off the site.');
+  });
+
+  $$('[data-mode]').forEach((b) =>
+    b.addEventListener('click', () => {
+      state.previewMode = b.dataset.mode;
+      $$('[data-mode]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+      $('[aria-label="Device"]').hidden = state.previewMode === 'card';
+      renderPostPreview(p, true);
+    }),
+  );
+  $$('[data-device]').forEach((b) =>
+    b.addEventListener('click', () => {
+      state.device = b.dataset.device;
+      $$('[data-device]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+      renderPostPreview(p, true);
+    }),
+  );
+}
+
+// ---------- Article editor: toolbar and paste ----------
+function bindMarkdown(p) {
+  const ta = $('#f-body');
+  const file = $('[data-md-file]');
+  const changed = () => ta.dispatchEvent(new Event('input', { bubbles: true }));
+  const wrap = (before, after = before, fallback = 'text') => {
+    const { selectionStart: a, selectionEnd: b, value } = ta;
+    const sel = value.slice(a, b) || fallback;
+    ta.setRangeText(before + sel + after, a, b, 'end');
+    ta.setSelectionRange(a + before.length, a + before.length + sel.length);
+    ta.focus();
+    changed();
+  };
+  // Put a prefix at the start of each selected line
+  const lines = (fn) => {
+    const { value } = ta;
+    const a = value.lastIndexOf('\n', ta.selectionStart - 1) + 1;
+    let b = value.indexOf('\n', ta.selectionEnd);
+    if (b === -1) b = value.length;
+    const block = value.slice(a, b).split('\n').map(fn).join('\n');
+    ta.setRangeText(block, a, b, 'end');
+    ta.focus();
+    changed();
+  };
+  const insertBlock = (text) => {
+    const { selectionStart: a, value } = ta;
+    const pre = a && value[a - 1] !== '\n' ? '\n\n' : a && value[a - 2] !== '\n' ? '\n' : '';
+    ta.setRangeText(`${pre}${text}\n\n`, a, ta.selectionEnd, 'end');
+    ta.focus();
+    changed();
+  };
+  $('.md-bar').addEventListener('click', (e) => {
+    const k = e.target.closest('[data-md]')?.dataset.md;
+    if (!k) return;
+    if (k === 'h2') lines((l) => '## ' + l.replace(/^#+\s*/, ''));
+    if (k === 'h3') lines((l) => '### ' + l.replace(/^#+\s*/, ''));
+    if (k === 'bold') wrap('**');
+    if (k === 'italic') wrap('*');
+    if (k === 'link') {
+      const url = prompt('Link address (for example /contact or https://…)');
+      if (url) wrap('[', `](${url.trim()})`, 'link text');
+    }
+    if (k === 'ul') lines((l) => '- ' + l.replace(/^([-*+]|\d+[.)])\s+/, ''));
+    if (k === 'ol') {
+      let n = 0;
+      lines((l) => `${++n}. ` + l.replace(/^([-*+]|\d+[.)])\s+/, ''));
+    }
+    if (k === 'quote') lines((l) => '> ' + l.replace(/^>\s?/, ''));
+    if (k === 'table') insertBlock('| Column | Column |\n|---|---|\n| Text | Text |\n| Text | Text |');
+    if (k === 'image') file.click();
+  });
+  file.addEventListener('change', async () => {
+    const f = file.files[0];
+    if (!f) return;
+    if (!f.type.startsWith('image/')) return toast('Please choose an image file.', 'err');
+    $('.busy-md').hidden = false;
+    try {
+      const url = await upload(f);
+      const alt = f.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+      insertBlock(`![${alt}](${url})`);
+    } catch (x) {
+      toast(esc(x.message), 'err', 7000);
+    } finally {
+      $('.busy-md').hidden = true;
+      file.value = '';
+    }
+  });
+  ta.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') (e.preventDefault(), wrap('**'));
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'i') (e.preventDefault(), wrap('*'));
+  });
+  // Pasting from Google Docs, Word, Notion or ChatGPT keeps headings, bold, links, lists and tables
+  ta.addEventListener('paste', (e) => {
+    const html = e.clipboardData?.getData('text/html');
+    if (!html) return;
+    const md = htmlToMarkdown(html);
+    if (!md.trim()) return;
+    e.preventDefault();
+    // Pasted blocks start on their own line
+    const a = ta.selectionStart;
+    const before = ta.value.slice(0, a);
+    const pre = !before || /\n\n$/.test(before) ? '' : /\n$/.test(before) ? '\n' : '\n\n';
+    const after = ta.value.slice(ta.selectionEnd);
+    const post = !after || /^\n\n/.test(after) ? '' : /^\n/.test(after) ? '\n' : '\n\n';
+    ta.setRangeText(pre + md + post, a, ta.selectionEnd, 'end');
+    changed();
+  });
+}
+
+function htmlToMarkdown(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('script,style,meta,link,title').forEach((n) => n.remove());
+  const isBold = (el) => /^(B|STRONG)$/.test(el.tagName) || Number(el.style?.fontWeight) >= 600 || el.style?.fontWeight === 'bold';
+  const isItalic = (el) => /^(I|EM)$/.test(el.tagName) || el.style?.fontStyle === 'italic';
+  const inl = (node) =>
+    [...node.childNodes]
+      .map((n) => {
+        if (n.nodeType === 3) return n.textContent.replace(/\s+/g, ' ');
+        if (n.nodeType !== 1) return '';
+        if (n.tagName === 'BR') return ' ';
+        if (n.tagName === 'IMG') return '';
+        let t = inl(n);
+        if (!t.trim()) return t;
+        const lead = t.match(/^\s*/)[0];
+        const tail = t.match(/\s*$/)[0];
+        t = t.trim();
+        // Google Docs wraps the whole document in <b style="font-weight:normal">
+        if (n.tagName === 'A' && n.getAttribute('href')) t = `[${t}](${n.getAttribute('href')})`;
+        else if (n.tagName === 'CODE') t = '`' + t + '`';
+        else {
+          if (isBold(n) && n.style?.fontWeight !== 'normal') t = `**${t}**`;
+          if (isItalic(n)) t = `*${t}*`;
+        }
+        return lead + t + tail;
+      })
+      .join('')
+      .replace(/\*\*\s*\*\*/g, '');
+  const out = [];
+  const block = (node, listDepth = 0) => {
+    for (const n of node.childNodes) {
+      if (n.nodeType === 3) {
+        if (n.textContent.trim()) out.push(n.textContent.trim());
+        continue;
+      }
+      if (n.nodeType !== 1) continue;
+      const tag = n.tagName;
+      if (/^H[1-6]$/.test(tag)) {
+        const level = Math.min(4, Math.max(2, Number(tag[1])));
+        const t = inl(n).replace(/\*\*/g, '').trim();
+        if (t) out.push('#'.repeat(level) + ' ' + t);
+      } else if (tag === 'P' || (tag === 'DIV' && ![...n.children].some((c) => /^(P|DIV|H\d|UL|OL|TABLE|BLOCKQUOTE)$/.test(c.tagName)))) {
+        const img = n.querySelector('img');
+        const t = inl(n).trim();
+        if (t) out.push(t);
+        if (img?.src && /^https?:/.test(img.src)) out.push(`![${img.alt || ''}](${img.src})`);
+      } else if (tag === 'UL' || tag === 'OL') {
+        const items = [...n.children].filter((c) => c.tagName === 'LI');
+        out.push(items.map((li, i) => `${tag === 'OL' ? `${i + 1}.` : '-'} ${inl(li).trim()}`).join('\n'));
+      } else if (tag === 'BLOCKQUOTE') {
+        out.push(inl(n).trim().replace(/^/gm, '> '));
+      } else if (tag === 'TABLE') {
+        const rows = [...n.querySelectorAll('tr')].map((tr) => [...tr.children].map((td) => inl(td).trim().replace(/\|/g, '/')));
+        if (rows.length) {
+          const w = Math.max(...rows.map((r) => r.length));
+          const line = (r) => `| ${Array.from({ length: w }, (_, i) => r[i] || '').join(' | ')} |`;
+          out.push([line(rows[0]), `|${' --- |'.repeat(w)}`, ...rows.slice(1).map(line)].join('\n'));
+        }
+      } else if (tag === 'HR') out.push('---');
+      else if (tag === 'PRE') out.push('```\n' + n.textContent.replace(/\n$/, '') + '\n```');
+      else if (tag === 'IMG') {
+        if (/^https?:/.test(n.src)) out.push(`![${n.alt || ''}](${n.src})`);
+      } else block(n, listDepth);
+    }
+  };
+  block(doc.body);
+  return out.filter((x) => x.trim()).join('\n\n');
+}
+
+// ---------- Post preview ----------
+function postPreviewHtml(p) {
+  const posts = state.posts.map((x) => (x === p ? { ...x, status: 'published', date: x.date || today() } : x));
+  const post = posts[state.posts.indexOf(p)] || p;
+  return renderPostPage(state.templates.blog, post, { origin: location.origin, posts, cases: state.cases })
+    .replace(/<script[^>]*main\.js[^>]*><\/script>/, '')
+    .replace('</head>', '<base target="_blank"><style>.loader{display:none!important}html{scroll-behavior:auto}</style></head>');
+}
+
+function postCardHtml(p) {
+  const head = state.templates.blog.split('<body>')[0].replace('{{head}}', '');
+  return `${head.replace('</head>', '<base target="_blank"><style>body{background:transparent;margin:0}.bcard{max-width:420px}</style></head>')}<body>${postCard({ ...p, tags: p.tags || [] })}</body></html>`;
+}
+
+function renderPostPreview(p, now = false) {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(() => paintPostPreview(p), now ? 0 : 300);
+}
+
+function paintPostPreview(p) {
+  const box = $('[data-preview]');
+  if (!box) return;
+  if (state.previewMode === 'card') {
+    box.innerHTML = '<div class="card-preview"><iframe title="Card preview" scrolling="no"></iframe></div>';
+    const f = $('iframe', box);
+    f.addEventListener('load', () => (f.style.height = f.contentDocument.documentElement.scrollHeight + 'px'));
+    f.srcdoc = postCardHtml(p);
+    return;
+  }
+  const mobile = state.device === 'mobile';
+  let frame = $('.frame', box);
+  if (!frame || frame.classList.contains('mobile') !== mobile) {
+    box.innerHTML = `<div class="frame${mobile ? ' mobile' : ''}"><div class="chrome"><i></i><i></i><i></i><span></span></div><div class="viewport"><iframe title="Page preview"></iframe></div></div>`;
+    frame = $('.frame', box);
+  }
+  $('.chrome span', frame).textContent = `noveralabs · /blog/${p.slug}`;
+  const vp = $('.viewport', frame);
+  const old = $$('iframe', vp).pop();
+  const y = old?.contentWindow?.scrollY || 0;
+  const width = mobile ? vp.clientWidth : 1280;
+  const scale = vp.clientWidth / width;
+  const f = document.createElement('iframe');
+  f.title = 'Page preview';
+  f.style.cssText = `width:${width}px;height:${vp.clientHeight / scale}px;transform:scale(${scale});visibility:hidden`;
+  f.addEventListener('load', () => {
+    f.contentWindow.scrollTo(0, y);
+    f.style.visibility = '';
+    $$('iframe', vp).forEach((x) => x !== f && x.remove());
+  });
+  f.srcdoc = postPreviewHtml(p);
+  vp.append(f);
+}
+
+// ---------- Leads ----------
+const LEAD_STATUS = [
+  ['new', 'New'],
+  ['contacted', 'Contacted'],
+  ['won', 'Won'],
+  ['lost', 'Not a fit'],
+];
+
+async function loadLeads() {
+  const data = await api('/api/admin/leads');
+  state.leads = data.leads || [];
+  updateLeadsNav();
+}
+
+// The Leads count in the sidebar: how many are still new
+function updateLeadsNav() {
+  const a = $('.side a[href="#/leads"]');
+  if (!a || !state.leads) return;
+  const fresh = state.leads.filter((l) => l.status === 'new').length;
+  a.querySelector('.count')?.remove();
+  if (fresh) a.insertAdjacentHTML('beforeend', `<span class="count new">${fresh}</span>`);
+}
+
+function waLink(phone, name) {
+  let d = String(phone || '').replace(/\D/g, '');
+  if (d.length === 10) d = '91' + d;
+  if (d.length === 11 && d.startsWith('0')) d = '91' + d.slice(1);
+  return `https://wa.me/${d}?text=${encodeURIComponent(`Hi ${name || ''}, this is Novera Labs. Thanks for your enquiry on our website.`)}`;
+}
+
+function fmtWhen(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+}
+
+async function renderLeads() {
+  const draw = () => {
+    const leads = state.leads || [];
+    app.className = '';
+    app.innerHTML = shell(
+      'leads',
+      `${topBar('Leads', 'Enquiries from the quote forms on your site, newest first. Reply fast: the first business to call back usually wins.', `<button class="btn" data-reload>Refresh</button>`)}
+      <div class="page">
+        ${storageBanner()}
+        ${
+          state.leads === null
+            ? '<div class="empty-state"><span class="spin dark"></span>Loading leads</div>'
+            : leads.length
+              ? `<div class="leads">${leads
+                  .map(
+                    (l) => `<article class="lead ${esc(l.status)}" data-id="${l.id}">
+                  <div class="lhead"><b>${esc(l.name)}</b><span class="when">${esc(fmtWhen(l.created_at))}</span>
+                    <select class="select sm" data-status aria-label="Status">${LEAD_STATUS.map(([v, t]) => `<option value="${v}" ${l.status === v ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+                  <div class="lmeta">${l.type ? `<span class="pill">${esc(l.type)}</span>` : ''}${l.budget && l.budget !== 'Not sure yet' ? `<span class="pill">${esc(l.budget)}</span>` : ''}${l.page ? `<span class="from">from ${esc(l.page)}</span>` : ''}</div>
+                  ${l.message ? `<p class="msg">${esc(l.message)}</p>` : ''}
+                  <div class="lacts"><a class="btn sm" href="tel:${esc(String(l.phone).replace(/[^\d+]/g, ''))}">${icon('phone')}${esc(l.phone)}</a><a class="btn sm wa" href="${esc(waLink(l.phone, l.name))}" target="_blank" rel="noopener">WhatsApp</a>${l.email ? `<a class="btn sm" href="mailto:${esc(l.email)}">${esc(l.email)}</a>` : ''}<button class="btn sm ghost icon danger" data-rm-lead aria-label="Delete lead">${icon('trash')}</button></div>
+                </article>`,
+                  )
+                  .join('')}</div>`
+              : `<div class="empty-state big"><b>No leads yet</b>When someone fills in “Get my free quote” on any page of your site, it shows up here.</div>`
+        }
+      </div>`,
+    );
+    bindShell();
+    $('[data-reload]').addEventListener('click', () => ((state.leads = null), renderLeads()));
+    $$('.lead').forEach((el) => {
+      const id = Number(el.dataset.id);
+      const lead = state.leads.find((l) => l.id === id);
+      $('[data-status]', el).addEventListener('change', async (e) => {
+        try {
+          await api('/api/admin/leads', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status: e.target.value }) });
+          lead.status = e.target.value;
+          el.className = `lead ${lead.status}`;
+          updateLeadsNav();
+        } catch (x) {
+          if (x.message !== 'signed-out') toast(esc(x.message), 'err');
+        }
+      });
+      $('[data-rm-lead]', el).addEventListener('click', async () => {
+        if (!(await confirmBox({ title: `Delete the lead from ${esc(lead.name)}?`, text: 'It’s removed for good.' }))) return;
+        try {
+          await api('/api/admin/leads', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, delete: true }) });
+          state.leads.splice(state.leads.indexOf(lead), 1);
+          draw();
+        } catch (x) {
+          if (x.message !== 'signed-out') toast(esc(x.message), 'err');
+        }
+      });
+    });
+  };
+  if (state.leads === null) {
+    draw();
+    try {
+      await loadLeads();
+    } catch (x) {
+      if (x.message === 'signed-out') return;
+      state.leads = [];
+      toast(esc(x.message), 'err');
+    }
+    if (location.hash.startsWith('#/leads')) draw();
+    return;
+  }
+  draw();
 }
 
 // ---------- Start ----------

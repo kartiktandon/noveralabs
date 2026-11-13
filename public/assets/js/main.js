@@ -38,7 +38,8 @@
       '.sec .stack', '.sec .head-row > p', '.svc-card', '.wcard', '.combo', '.inc > div', '.gets > div', '.tech > div', '.app-card',
       '.row-item', '.more-row', '.faq-item', '.timeline li', '.statement p', '.quote-card', '.home-pricing .band', '.tcard', '.phone',
       '.picker .band', '.pay-band .band', '.psteps li', '.terms > div', '.case-media', '.story', '.feat', '.shots > div', '.stack-chips',
-      '.case-quote', '.all-projects', '.c-card', '.next-steps li', '.others', '.cta .copy', '.cta .form-wrap', '.work-list', '.work-preview'];
+      '.case-quote', '.all-projects', '.c-card', '.next-steps li', '.others', '.cta .copy', '.cta .form-wrap', '.work-list', '.work-preview',
+      '.bhead > *', '.bcover', '.bfeat', '.bcard', '.bwork', '.btopics', '.bcats'];
     var els = document.querySelectorAll(sel.join(','));
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
@@ -107,6 +108,17 @@
     });
   }
 
+  // Blog post: highlight the section being read in "On this page"
+  var toc = document.querySelectorAll('.bstick .btoc a');
+  if (toc.length && 'IntersectionObserver' in window) {
+    var heads = Array.prototype.map.call(toc, function (a) { return document.getElementById(a.getAttribute('href').slice(1)); }).filter(Boolean);
+    var mark = function (id) { toc.forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + id); }); };
+    var tio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) mark(en.target.id); });
+    }, { rootMargin: '0px 0px -70% 0px' });
+    heads.forEach(function (h) { tio.observe(h); });
+  }
+
   // Work: filters
   var filters = document.querySelector('[data-filters]');
   if (filters) {
@@ -142,8 +154,26 @@
         if (bad) ok = false;
       });
       if (!ok) return;
-      // TODO: connect to the lead destination (email, CRM or WhatsApp API) before launch.
-      form.classList.add('sent');
+      // Send the enquiry to /api/leads; it shows up under Leads in /admin
+      var data = {};
+      new FormData(form).forEach(function (v, k) { data[k] = String(v); });
+      form.querySelectorAll('[data-single][data-name]').forEach(function (g) {
+        var b = g.querySelector('[aria-pressed="true"]');
+        data[g.dataset.name] = b ? b.textContent.trim() : '';
+      });
+      data.page = location.pathname;
+      data.website = (form.querySelector('[name="website"]') || {}).value || '';
+      var btn = form.querySelector('[type="submit"]');
+      if (btn) btn.disabled = true;
+      fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || 'failed'); }); })
+        .then(function () { form.classList.add('sent'); })
+        .catch(function () {
+          if (btn) btn.disabled = false;
+          var msg = 'Hi Novera Labs, I\'m ' + (data.name || '') + ' (' + (data.phone || '') + '). I want to build: ' + (data.type || '') + '. ' + (data.message || '');
+          var fine = form.querySelector('.fine');
+          if (fine) fine.innerHTML = 'That didn\'t go through. Please <a href="https://wa.me/919870443265?text=' + encodeURIComponent(msg) + '" style="color:inherit;font-weight:500">send it on WhatsApp</a> instead.';
+        });
     });
   });
   // Phone video autoplay muted + sound toggle + play/pause
