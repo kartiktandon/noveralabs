@@ -175,7 +175,11 @@
       if (btn) btn.disabled = true;
       fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
         .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || 'failed'); }); })
-        .then(function () { form.classList.add('sent'); })
+        .then(function () {
+          form.classList.add('sent');
+          // Counted as an enquiry in Google Analytics (mark generate_lead as a key event there)
+          if (window.gtag) window.gtag('event', 'generate_lead', { form_page: location.pathname, project_type: data.type || '' });
+        })
         .catch(function () {
           if (btn) btn.disabled = false;
           var msg = 'Hi Novera Labs, I\'m ' + (data.name || '') + ' (' + (data.phone || '') + '). I want to build: ' + (data.type || '') + '. ' + (data.message || '');
