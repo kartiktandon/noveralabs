@@ -998,6 +998,7 @@ function newPost() {
     cover_image: '',
     cover_alt: '',
     body: '',
+    takeaways: [],
     faqs: [],
     seo_title: '',
     seo_description: '',
@@ -1038,7 +1039,7 @@ function renderPostEditor(p) {
       ${storageBanner()}
       <div class="editor">
         <form class="form" id="post-form" autocomplete="off" onsubmit="return false">
-          <nav class="sections-nav"><a href="#s-pub">Publish</a><a href="#s-basics">Basics</a><a href="#s-article">Article</a><a href="#s-faq">FAQs</a><a href="#s-google">Google</a></nav>
+          <nav class="sections-nav"><a href="#s-pub">Publish</a><a href="#s-basics">Basics</a><a href="#s-key">Key takeaways</a><a href="#s-article">Article</a><a href="#s-faq">FAQs</a><a href="#s-google">Google</a></nav>
 
           <section class="sec" id="s-pub">
             <div class="sec-head"><div><h3>Publish</h3><p>Drafts are only visible here. A published post with a future date goes live on that day.</p></div>
@@ -1064,6 +1065,18 @@ function renderPostEditor(p) {
               </div>
               ${imageField(p, 'cover_image', 'Cover image', 'Wide image, about 1600 × 900 px')}
               ${input(p, 'cover_alt', 'Cover image description', { small: 'for Google and screen readers', placeholder: 'What the image shows' })}
+            </div>
+          </section>
+
+          <section class="sec" id="s-key">
+            <div class="sec-head"><div><h3>Key takeaways</h3><p>The summary box at the top of the post. 6 or 7 short points work best: one idea each, in plain words.</p></div><span class="wc">${(p.takeaways || []).filter((t) => String(t).trim()).length} points</span></div>
+            <div class="stack">
+              <div class="repeat">${(p.takeaways || [])
+                .map(
+                  (t, i) => `<div class="item"><span class="n">${i + 1}</span><div class="fields"><textarea class="textarea" data-path="takeaways.${i}" rows="1" placeholder="One key point from the article" aria-label="Key takeaway ${i + 1}">${esc(t)}</textarea></div><div class="tools">${itemTools('takeaways', i, p.takeaways.length)}</div></div>`,
+                )
+                .join('')}</div>
+              ${(p.takeaways || []).length < 8 ? `<button type="button" class="btn sm add-row" data-add="takeaways">${icon('plus')}Add point</button>` : ''}
             </div>
           </section>
 
@@ -1172,10 +1185,11 @@ function bindPost(p, isNew) {
     const mv = e.target.closest('[data-move]');
     const untag = e.target.closest('[data-untag]');
     if (add) {
-      p.faqs = [...(p.faqs || []), { q: '', a: '' }];
+      const list = add.dataset.add;
+      p[list] = [...(p[list] || []), list === 'faqs' ? { q: '', a: '' } : ''];
       updateDirty();
       rerender();
-      $$('[data-path$=".q"]').pop()?.focus();
+      (list === 'faqs' ? $$('[data-path$=".q"]') : $$('[data-path^="takeaways."]')).pop()?.focus();
     }
     if (rm) {
       const [list, i] = rm.dataset.remove.split('.');
