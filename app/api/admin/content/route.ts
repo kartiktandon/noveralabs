@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   // If the database is missing or unreachable, still open the panel and say why saving is off
   const problem = await checkStorage();
   if (problem) {
-    const content = normalize({ cases: defaults.cases, more: defaults.more });
+    const content = { ...normalize({ cases: defaults.cases, more: defaults.more }), posts: defaults.posts };
     return json({ ...content, saved: false, storage: false, storageError: problem === 'not-set-up' ? '' : problem, templates });
   }
   try {
@@ -30,6 +30,11 @@ export async function PUT(request: Request) {
   const slugs = body.cases.map((c) => String(c.slug || ''));
   const dupe = slugs.find((s, i) => slugs.indexOf(s) !== i);
   if (dupe) return json({ error: `Two case studies use the page address "${dupe}". Change one of them.` }, 400);
+  if (body.posts !== undefined && !Array.isArray(body.posts)) return json({ error: 'Nothing to save.' }, 400);
+  const postSlugs = (body.posts || []).map((p) => String(p.slug || ''));
+  if (postSlugs.some((s) => !s)) return json({ error: 'Every blog post needs a title and a page address.' }, 400);
+  const dupePost = postSlugs.find((s, i) => postSlugs.indexOf(s) !== i);
+  if (dupePost) return json({ error: `Two blog posts use the page address "${dupePost}". Change one of them.` }, 400);
   try {
     return json({ ...(await saveContent(body)), saved: true });
   } catch (e) {

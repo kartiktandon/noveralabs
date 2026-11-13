@@ -1,4 +1,4 @@
-import { casePage, workPage } from '@/lib/site/pages';
+import { casePage, robots, sitemap, workPage } from '@/lib/site/pages';
 
 // The Work page and case study pages are built from what is saved in /admin;
 // the other top-level pages are static files in public/.
@@ -33,7 +33,11 @@ const aliasMap: Record<string, string> = {
 };
 
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
-  const slug = (await params).slug.replace(/\.html$/, '');
+  const raw = (await params).slug;
+  if (raw === 'sitemap.xml') return sitemap(request);
+  if (raw === 'robots.txt') return robots(request);
+  if (raw === 'rss.xml' || raw === 'feed') return Response.redirect(new URL('/blog/rss.xml', request.url), 308);
+  const slug = raw.replace(/\.html$/, '');
   if (slug === 'index') return Response.redirect(new URL('/', request.url), 308);
   if (slug === 'work') return workPage();
   if (slug.startsWith('case-study-')) return casePage(slug.slice('case-study-'.length), request);

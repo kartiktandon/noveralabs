@@ -42,7 +42,8 @@ export function normalize(content) {
     .filter((c) => c.slug)
     .sort(byOrder('slug'));
   const more = [...(content?.more || [])].sort(byOrder('title'));
-  return { cases, more };
+  // Blog posts are cleaned up by lib/site/blog.mjs; kept as they are here
+  return Array.isArray(content?.posts) ? { cases, more, posts: content.posts } : { cases, more };
 }
 
 export function workGrid(cases) {
