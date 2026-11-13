@@ -5,7 +5,6 @@ import { esc, slugify, src } from './render.mjs';
 
 const ARW = (n) =>
   `<svg width="${n}" height="${n}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>`;
-const WA = 'https://wa.me/919870443265';
 
 // ---------- Posts ----------
 const today = () => new Date().toISOString().slice(0, 10);
@@ -73,7 +72,7 @@ const cells = (line) =>
     .split('|')
     .map((c) => c.trim());
 
-// Returns { html, toc } — toc lists the H2s for "On this page"
+// Returns { html, toc } — toc lists the H2s and H3s for the table of contents
 export function markdown(md) {
   const lines = String(md || '').replace(/\r\n?/g, '\n').split('\n');
   const out = [];
@@ -110,7 +109,7 @@ export function markdown(md) {
       const level = Math.min(4, Math.max(2, h[1].length === 1 ? 2 : h[1].length));
       const text = h[2];
       const id = idFor(text);
-      if (level === 2) toc.push({ id, text: text.replace(/[*_`]/g, '') });
+      if (level <= 3) toc.push({ id, level, text: text.replace(/[*_`]/g, '') });
       out.push(`<h${level} id="${id}">${inline(text)}</h${level}>`);
       continue;
     }
@@ -326,8 +325,38 @@ ${isHome ? topics(posts) : ''}
 }
 
 // ---------- A post ----------
-function workCard(c) {
-  return `<a class="bwork" href="/case-study-${esc(c.slug)}"><img src="${esc(src(c.card_image))}" alt="${esc(c.name)}" loading="lazy"><span><small>${esc(c.type_label)}</small><b>${esc(c.name)}</b></span></a>`;
+const CLOCK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+const SHARE = {
+  linkedin: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.5h4V21H3zM9.5 9.5h3.8v1.6h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.6 4.8 6V21h-4v-5.2c0-1.2 0-2.9-1.8-2.9s-2 1.4-2 2.8V21h-4z"/></svg>',
+  x: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.8 3h3.3l-7.2 8.2L22.3 21h-6.6l-5.2-6.8L4.6 21H1.3l7.7-8.8L.9 3h6.8l4.7 6.2zm-1.2 16h1.8L7.5 4.9H5.6z"/></svg>',
+  facebook: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.3c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2H7.5v3.6h2.8V21H14v-8.9h2.8l.4-3.6z"/></svg>',
+  whatsapp: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.3z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1.2-1.4-2-1-1 .8a4 4 0 0 1-2.1-2.1l.8-1-1-2z"/></svg>',
+  link: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>',
+};
+
+// "3 days ago", "1 month ago", from the post's date
+export function timeAgo(date, now = new Date()) {
+  const d = new Date(String(date || '') + 'T00:00:00+05:30');
+  if (Number.isNaN(d.getTime())) return '';
+  const days = Math.max(0, Math.floor((now.getTime() - d.getTime()) / 86400000));
+  if (days < 1) return 'Today';
+  if (days < 7) return days === 1 ? 'Yesterday' : `${days} days ago`;
+  if (days < 30) return `${Math.floor(days / 7)} week${days < 14 ? '' : 's'} ago`;
+  if (days < 365) return `${Math.floor(days / 30)} month${days < 60 ? '' : 's'} ago`;
+  return `${Math.floor(days / 365)} year${days < 730 ? '' : 's'} ago`;
+}
+
+const thumb = (image, alt) =>
+  image
+    ? `<img src="${esc(src(image))}" alt="${esc(alt)}" loading="lazy" width="128" height="104">`
+    : '<span class="ph" aria-hidden="true"></span>';
+
+function sideRelated(p) {
+  return `<a class="srow" href="${postUrl(p)}">${thumb(p.cover_image, p.cover_alt || p.title)}<span class="stxt"><span class="smeta"><span class="ago">${CLOCK}${esc(timeAgo(p.date))}</span>${p.category ? `<span class="pill">${esc(p.category)}</span>` : ''}</span><b>${esc(p.title)}</b></span></a>`;
+}
+
+function sideWork(c) {
+  return `<a class="srow" href="/case-study-${esc(c.slug)}">${thumb(c.card_image, c.name)}<span class="stxt"><span class="smeta"><span class="pill">${esc(c.type_label)}</span></span><b>${esc(c.name)}</b><small>${esc(c.card_line)}</small></span></a>`;
 }
 
 export function renderPost(template, post, { origin = '', posts = [], cases = [] } = {}) {
@@ -335,17 +364,22 @@ export function renderPost(template, post, { origin = '', posts = [], cases = []
   const live = livePosts(posts);
   const { html, toc } = markdown(p.body);
   const mins = readMinutes(p.body);
+  const words = String(p.body || '').split(/\s+/).filter(Boolean).length;
   const related = [
     ...live.filter((x) => x.slug !== p.slug && p.category && x.category === p.category),
     ...live.filter((x) => x.slug !== p.slug && x.category !== p.category && x.tags.some((t) => p.tags.includes(t))),
     ...live.filter((x) => x.slug !== p.slug),
-  ].filter((x, i, a) => a.indexOf(x) === i).slice(0, 3);
+  ]
+    .filter((x, i, a) => a.indexOf(x) === i)
+    .slice(0, 5);
   const idx = live.findIndex((x) => x.slug === p.slug);
   const newer = idx > 0 ? live[idx - 1] : null;
   const older = idx >= 0 && idx < live.length - 1 ? live[idx + 1] : null;
   const work = cases.filter((c) => c.show_on_work !== false && c.card_image).slice(0, 3);
   const faqs = p.faqs || [];
+  const takeaways = (p.takeaways || []).map((t) => String(t).trim()).filter(Boolean);
   const path = postUrl(p);
+  const url = origin + path;
   const title = p.seo_title || `${p.title} | Novera Labs`;
   const description = p.seo_description || p.excerpt || '';
   const items = [['Home', '/'], ['Blog', '/blog'], ...(p.category ? [[p.category, categoryUrl(p.category)]] : []), [p.title, path]];
@@ -371,10 +405,11 @@ export function renderPost(template, post, { origin = '', posts = [], cases = []
         dateModified: p.updated || p.date,
         author: p.author && p.author !== 'Novera Labs' ? { '@type': 'Person', name: p.author } : ORG(origin),
         publisher: ORG(origin),
-        mainEntityOfPage: { '@type': 'WebPage', '@id': origin + path },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': url },
         articleSection: p.category || undefined,
         keywords: p.tags.join(', ') || undefined,
-        wordCount: String(p.body || '').split(/\s+/).filter(Boolean).length,
+        abstract: takeaways.length ? takeaways.join(' ') : undefined,
+        wordCount: words,
         inLanguage: 'en-IN',
       }),
       crumbs(origin, items),
@@ -390,31 +425,48 @@ export function renderPost(template, post, { origin = '', posts = [], cases = []
       .join('\n'),
   });
 
-  const tocHtml = toc.length
-    ? `<nav class="btoc" aria-label="On this page"><p class="eb no-dot">On this page</p><ol>${toc.map((t) => `<li><a href="#${t.id}">${esc(t.text)}</a></li>`).join('')}</ol></nav>`
+  const tocList = toc.length
+    ? `<ol>${toc.map((t) => `<li class="l${t.level}"><a href="#${t.id}">${esc(t.text)}</a></li>`).join('')}</ol>`
     : '';
-  const idea = `<div class="bidea">
-          <p class="t">Got a project in mind?</p>
-          <p>Tell us what you want to build. We reply within one working day with questions, an approach and one fixed price.</p>
-          <a class="start" href="#start">Get a free quote<span>${ARW(16)}</span></a>
-          <a class="wa-row" href="${WA}">WhatsApp us</a>
-        </div>`;
+  const enc = encodeURIComponent;
+  const share = `<div class="bshare" aria-label="Share"><span>Share</span>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url=${enc(url)}" target="_blank" rel="noopener" aria-label="Share on LinkedIn">${SHARE.linkedin}</a>
+        <a href="https://x.com/intent/post?url=${enc(url)}&amp;text=${enc(p.title)}" target="_blank" rel="noopener" aria-label="Share on X">${SHARE.x}</a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${enc(url)}" target="_blank" rel="noopener" aria-label="Share on Facebook">${SHARE.facebook}</a>
+        <a href="https://wa.me/?text=${enc(`${p.title} ${url}`)}" target="_blank" rel="noopener" aria-label="Share on WhatsApp">${SHARE.whatsapp}</a>
+        <button type="button" data-copy="${esc(url)}" aria-label="Copy link">${SHARE.link}</button>
+      </div>`;
   const main = `<main>
   <article class="bpost">
-    <header class="wrap bhead">
-      <p class="crumb"><a href="/blog">Blog</a>${p.category ? ` / <a href="${categoryUrl(p.category)}"><b>${esc(p.category)}</b></a>` : ''}</p>
-      <h1 class="h1">${esc(p.title)}</h1>
-      ${p.excerpt ? `<p class="lead s20">${esc(p.excerpt)}</p>` : ''}
-      <p class="bmeta"><span>${esc(p.author || 'Novera Labs')}</span><span>${esc(fmtDate(p.date))}</span><span>${mins} min read</span>${p.updated && p.updated !== p.date ? `<span>Updated ${esc(fmtDate(p.updated))}</span>` : ''}</p>
+    <header class="bwrap bhead">
+      <nav class="bcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span>›</span><a href="/blog">Blog</a>${p.category ? `<span>›</span><a href="${categoryUrl(p.category)}">${esc(p.category)}</a>` : ''}</nav>
+      <p class="bmeta">${p.category ? `<a class="cat" href="${categoryUrl(p.category)}">${esc(p.category)}</a>` : ''}<span class="ico">${CLOCK}${mins} min read</span><span>${esc(fmtDate(p.date))}</span><span class="faint">${words} words</span></p>
+      <h1>${esc(p.title)}</h1>
+      ${p.excerpt ? `<p class="bsum">${esc(p.excerpt)}</p>` : ''}
+      <div class="bbar">
+        ${p.tags.length ? `<p class="btags">${p.tags.map((t) => `<a href="${tagUrl(t)}">#${esc(t)}</a>`).join('')}</p>` : '<span></span>'}
+        ${share}
+      </div>
     </header>
-    ${p.cover_image ? `<figure class="wrap-wide bcover"><img src="${esc(src(p.cover_image))}" alt="${esc(p.cover_alt || p.title)}" width="1600" height="900"></figure>` : ''}
-    <div class="wrap bbody">
-      <aside class="bside">
-        ${tocHtml ? `<details class="btoc-m"><summary>On this page</summary>${tocHtml}</details>` : ''}
-        <div class="bstick">${tocHtml}${idea}</div>
+
+    <div class="bwrap bcols">
+      <aside class="bleft">
+        ${tocList ? `<nav class="btoc" aria-label="Table of contents"><p class="bh">Table of contents</p>${tocList}</nav>` : ''}
       </aside>
-      <div class="prose">
+
+      <div class="bmid">
+        ${tocList ? `<details class="btoc-m"><summary>Table of contents</summary>${tocList}</details>` : ''}
+        ${
+          takeaways.length
+            ? `<details class="bkey" open><summary>Key takeaways:</summary><ul>${takeaways.map((t) => `<li>${inline(t)}</li>`).join('')}</ul></details>`
+            : ''
+        }
+        <div class="bcard-main">
+          ${p.cover_image ? `<img class="bcover" src="${esc(src(p.cover_image))}" alt="${esc(p.cover_alt || p.title)}" width="1600" height="900">` : ''}
+          <div class="prose">
 ${html || '<p>Start writing in the Article box.</p>'}
+          </div>
+        </div>
         ${
           faqs.length
             ? `<section class="bfaq"><h2 id="faq">Frequently asked questions</h2><div class="faq">${faqs
@@ -425,35 +477,22 @@ ${html || '<p>Start writing in the Article box.</p>'}
                 .join('')}</div></section>`
             : ''
         }
-        ${p.tags.length ? `<p class="btags">${p.tags.map((t) => `<a href="${tagUrl(t)}">#${esc(t)}</a>`).join('')}</p>` : ''}
-        <div class="bmobile-idea">${idea}</div>
+        <div class="bauthor"><span class="av" aria-hidden="true"><img src="/assets/img/mark-white.png" alt=""></span><span><small>Written by</small><b>${esc(p.author || 'Novera Labs')}</b></span><span><small>Published on</small><b>${esc(fmtDate(p.date))}</b></span></div>
         ${
           newer || older
             ? `<nav class="bnav" aria-label="More articles">${older ? `<a href="${postUrl(older)}"><small>Previous</small><b>${esc(older.title)}</b></a>` : '<span></span>'}${newer ? `<a class="next" href="${postUrl(newer)}"><small>Next</small><b>${esc(newer.title)}</b></a>` : ''}</nav>`
             : ''
         }
       </div>
+
+      <aside class="bright">
+        <a class="bpromo" href="#start"><small>Planning something similar?</small><b>Get a free quote</b><span>We reply within one working day.</span><i>${ARW(14)}</i></a>
+        ${related.length ? `<section class="bside-list"><p class="bh">Related blogs</p>${related.map(sideRelated).join('')}</section>` : ''}
+        ${work.length ? `<section class="bside-list"><p class="bh">Latest work</p>${work.map(sideWork).join('')}<a class="ball" href="/work">View all work →</a></section>` : ''}
+      </aside>
     </div>
   </article>
-${
-  related.length
-    ? `  <section class="wrap sec brel">
-    <div class="head-row"><div class="stack"><p class="eb">Keep reading</p><h2 class="h2 s52">Related articles</h2></div><a class="ghost" href="/blog">All articles →</a></div>
-    <div class="bgrid">
-      ${related.map(postCard).join('\n      ')}
-    </div>
-  </section>
-`
-    : ''
-}${
-    work.length
-      ? `  <section class="wrap sec brel">
-    <div class="head-row"><div class="stack"><p class="eb">Recent work</p><h2 class="h2 s52">What we've built.</h2></div><a class="ghost" href="/work">View all work →</a></div>
-    <div class="bworks">${work.map(workCard).join('')}</div>
-  </section>
-`
-      : ''
-  }</main>`;
+</main>`;
   return fill(template, headHtml, main);
 }
 

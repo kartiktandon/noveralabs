@@ -39,7 +39,7 @@
       '.row-item', '.more-row', '.faq-item', '.timeline li', '.statement p', '.quote-card', '.home-pricing .band', '.tcard', '.phone',
       '.picker .band', '.pay-band .band', '.psteps li', '.terms > div', '.case-media', '.story', '.feat', '.shots > div', '.stack-chips',
       '.case-quote', '.all-projects', '.c-card', '.next-steps li', '.others', '.cta .copy', '.cta .form-wrap', '.work-list', '.work-preview',
-      '.bhead > *', '.bcover', '.bfeat', '.bcard', '.bwork', '.btopics', '.bcats'];
+      '.bhead > *', '.bfeat', '.bcard', '.btopics', '.bcats'];
     var els = document.querySelectorAll(sel.join(','));
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
@@ -109,7 +109,7 @@
   }
 
   // Blog post: highlight the section being read in "On this page"
-  var toc = document.querySelectorAll('.bstick .btoc a');
+  var toc = document.querySelectorAll('.bleft .btoc a');
   if (toc.length && 'IntersectionObserver' in window) {
     var heads = Array.prototype.map.call(toc, function (a) { return document.getElementById(a.getAttribute('href').slice(1)); }).filter(Boolean);
     var mark = function (id) { toc.forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + id); }); };
@@ -118,6 +118,14 @@
     }, { rootMargin: '0px 0px -70% 0px' });
     heads.forEach(function (h) { tio.observe(h); });
   }
+
+  // Blog post: copy link
+  document.querySelectorAll('[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var done = function () { b.classList.add('done'); b.setAttribute('aria-label', 'Link copied'); setTimeout(function () { b.classList.remove('done'); b.setAttribute('aria-label', 'Copy link'); }, 1800); };
+      if (navigator.clipboard) navigator.clipboard.writeText(b.dataset.copy).then(done, function () {});
+    });
+  });
 
   // Work: filters
   var filters = document.querySelector('[data-filters]');
