@@ -924,7 +924,7 @@ function renderMore() {
 
 // ---------- Blog posts ----------
 const today = () => new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
-const postState = (p) => (p.status !== 'published' ? 'draft' : isLive(p, today()) ? 'live' : 'scheduled');
+const postState = (p) => (p.status !== 'published' ? 'draft' : isLive(p) ? 'live' : 'scheduled');
 const STATE_LABEL = { live: 'Published', draft: 'Draft', scheduled: 'Scheduled' };
 
 function renderBlog() {
@@ -1042,10 +1042,11 @@ function renderPostEditor(p) {
           <nav class="sections-nav"><a href="#s-pub">Publish</a><a href="#s-basics">Basics</a><a href="#s-key">Key takeaways</a><a href="#s-article">Article</a><a href="#s-faq">FAQs</a><a href="#s-google">Google</a></nav>
 
           <section class="sec" id="s-pub">
-            <div class="sec-head"><div><h3>Publish</h3><p>Drafts are only visible here. A published post with a future date goes live on that day.</p></div>
+            <div class="sec-head"><div><h3>Publish</h3><p>Drafts are only visible here. A published post with a future date and time goes live at that moment (India time).</p></div>
               <label class="switch"><input type="checkbox" data-path="status" data-status ${p.status === 'published' ? 'checked' : ''}>Published</label></div>
             <div class="grid3">
               <div class="field"><label for="f-date">Publish date</label><input class="input" type="date" id="f-date" data-path="date" value="${esc(p.date)}"></div>
+              <div class="field"><label for="f-time">Publish time (IST)</label><input class="input" type="time" id="f-time" data-path="time" value="${esc(p.time || '')}"></div>
               ${input(p, 'author', 'Author', { placeholder: 'Novera Labs' })}
               <div class="field"><span class="label">Featured</span><label class="switch inline"><input type="checkbox" data-path="featured" data-bool ${p.featured ? 'checked' : ''}>Show at the top of /blog</label></div>
             </div>
@@ -1170,7 +1171,7 @@ function bindPost(p, isNew) {
     if (path === 'seo_title') $('[data-count-t]').textContent = v.length;
     if (path === 'seo_description') $('[data-count]').textContent = v.length;
     if (path === 'body') $('[data-wc]').textContent = `${v.split(/\s+/).filter(Boolean).length} words · ${readMinutes(v)} min read`;
-    if (path === 'status' || path === 'date') refreshState();
+    if (path === 'status' || path === 'date' || path === 'time') refreshState();
     if (path === 'featured' && v) state.posts.forEach((x) => x !== p && (x.featured = false));
     updateDirty();
     renderPostPreview(p);
